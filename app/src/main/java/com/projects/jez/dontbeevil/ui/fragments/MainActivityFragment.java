@@ -1,10 +1,12 @@
-package com.projects.jez.dontbeevil;
+package com.projects.jez.dontbeevil.ui.fragments;
 
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.projects.jez.dontbeevil.R;
 
 /**
  * A placeholder fragment containing a simple view.
