@@ -2,7 +2,7 @@ package com.projects.jez.utils;
 
 import android.util.Pair;
 
-import com.projects.jez.observable.Mapper;
+import com.projects.jez.utils.observable.Mapper;
 
 public class Box<T> {
     private final T mValue;

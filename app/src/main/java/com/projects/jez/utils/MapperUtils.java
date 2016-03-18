@@ -4,8 +4,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Pair;
 
-import com.projects.jez.observable.Filter;
-import com.projects.jez.observable.Mapper;
+import com.projects.jez.utils.observable.Filter;
+import com.projects.jez.utils.observable.Mapper;
 
 import java.util.ArrayList;
 import java.util.HashSet;

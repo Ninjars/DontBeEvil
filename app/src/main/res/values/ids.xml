@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="reactive_text_disposable" type="id"/>
+    <item name="reactive_text_color_disposable" type="id"/>
+    <item name="reactive_enabled_disposable" type="id"/>
+    <item name="reactive_checked_disposable" type="id"/>
+    <item name="reactive_visibility_disposable" type="id"/>
+    <item name="reactive_background_color_disposable" type="id"/>
+    <item name="reactive_image_disposable" type="id"/>
+    <item name="reactive_progress_disposable" type="id"/>
+    <item name="reactive_progress_max_disposable" type="id"/>
+</resources>
