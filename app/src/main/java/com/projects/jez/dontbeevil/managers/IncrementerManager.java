@@ -1,5 +1,7 @@
 package com.projects.jez.dontbeevil.managers;
 
+import com.projects.jez.dontbeevil.Constants;
+import com.projects.jez.dontbeevil.data.IncrementableValue;
 import com.projects.jez.dontbeevil.data.Incrementer;
 
 import java.util.Collection;
@@ -10,6 +12,10 @@ import java.util.HashMap;
  */
 public class IncrementerManager {
     private HashMap<String, Incrementer> mIncrementers = new HashMap<>();
+
+    protected IncrementerManager() {
+        addIncrementer(new Incrementer(Constants.cPlayIncrementerId, new IncrementableValue()));
+    }
 
     public void addIncrementer(Incrementer incrementer) {
         mIncrementers.put(incrementer.getId(), incrementer);

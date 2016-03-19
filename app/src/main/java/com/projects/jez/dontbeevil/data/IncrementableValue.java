@@ -8,17 +8,17 @@ import com.projects.jez.utils.observable.Source;
  */
 public class IncrementableValue {
     private static final Source<Long> mCount = new Source<>(0l);
-    private long mAmountPerTick = 1;
+    private static final Source<Long> mAmountPerTick = new Source<>(1l);
 
-    public Observable<Long> getCount() {
+    public Observable<Long> getValue() {
         return mCount.getObservable();
     }
 
     public void increment() {
-        mCount.put(mCount.getObservable().getCurrent() + mAmountPerTick);
+        mCount.put(mCount.getObservable().getCurrent() + mAmountPerTick.getObservable().getCurrent());
     }
 
     public void setAmountPerIncrement(long tickIncrement) {
-        mAmountPerTick = tickIncrement;
+        mAmountPerTick.put(tickIncrement);
     }
 }

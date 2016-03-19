@@ -1,6 +1,4 @@
-package com.projects.jez.dontbeevil;
-
-import com.projects.jez.dontbeevil.managers.IncrementerManager;
+package com.projects.jez.dontbeevil.managers;
 
 /**
  * Created by Jez on 18/03/2016.
@@ -8,10 +6,12 @@ import com.projects.jez.dontbeevil.managers.IncrementerManager;
 public final class Environment {
     private static Environment instance = null;
 
-    private final IncrementerManager mIncrementerManager;
+    private final IncrementerManager incrementerManager;
+    private final GameManager gameManager;
 
     private Environment() {
-        mIncrementerManager = new IncrementerManager();
+        incrementerManager = new IncrementerManager();
+        gameManager = new GameManager(incrementerManager);
     }
 
     public static synchronized Environment getInstance() {
@@ -22,6 +22,10 @@ public final class Environment {
     }
 
     public IncrementerManager getIncrementerManager() {
-        return mIncrementerManager;
+        return incrementerManager;
+    }
+
+    public GameManager getGameManager() {
+        return gameManager;
     }
 }
