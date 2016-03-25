@@ -18,8 +18,10 @@ public class IncrementerMetadataScript {
     List<CostScript> baseCost;
     @SerializedName("per_level_factor")
     List<CostScript> perLevelCostFactor;
-    @SerializedName("loop_period")
-    Long loopPeriod;
+    @SerializedName("charge_time")
+    long chargeTime;
+    @SerializedName("auto_loop")
+    boolean autoLoop = true;
 
     public String getTitle() {
         return title;
@@ -41,7 +43,11 @@ public class IncrementerMetadataScript {
         return perLevelCostFactor;
     }
 
-    public Long getLoopPeriod() {
-        return loopPeriod;
+    public Long getChargeTime() {
+        return chargeTime;
+    }
+
+    public boolean isAutoLooping() {
+        return autoLoop;
     }
 }

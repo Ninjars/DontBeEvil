@@ -13,7 +13,8 @@ public class IncrementerMetadata {
     private final String title;
     private final String caption;
     private final int sortOrder;
-    private final long loopPeriod;
+    private final long chargeTime;
+    private final boolean autoLooping;
     private final List<Cost> baseCost;
     private final List<Cost> perLevelFactor;
 
@@ -21,7 +22,8 @@ public class IncrementerMetadata {
         title = metadata.getTitle();
         caption = metadata.getCaption();
         sortOrder = metadata.getSortOrder();
-        loopPeriod = metadata.getLoopPeriod();
+        chargeTime = metadata.getChargeTime();
+        autoLooping = metadata.isAutoLooping();
         baseCost = MapperUtils.map(metadata.getBaseCost(), Cost.costScriptMapper);
         perLevelFactor = MapperUtils.map(metadata.getPerLevelCostFactor(), Cost.costScriptMapper);
     }
@@ -38,8 +40,12 @@ public class IncrementerMetadata {
         return sortOrder;
     }
 
-    public long getLoopPeriod() {
-        return loopPeriod;
+    public long getChargeTime() {
+        return chargeTime;
+    }
+
+    public boolean isAutoLooping() {
+        return autoLooping;
     }
 
     public List<Cost> getBaseCost() {
