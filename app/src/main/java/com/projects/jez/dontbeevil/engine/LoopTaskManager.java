@@ -9,6 +9,8 @@ import java.util.HashMap;
 
 /**
  * Created by Jez on 25/03/2016.
+ * LoopTaskManager is intended to be the central location that manages LoopTaskHandler state,
+ * pausing, resuming and updating all LoopTaskHandlers, without exposing them to the rest of the app
  */
 public class LoopTaskManager {
 

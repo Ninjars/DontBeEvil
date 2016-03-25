@@ -4,6 +4,8 @@ import com.projects.jez.dontbeevil.BuildConfig;
 
 /**
  * Created by Jez on 25/03/2016.
+ * Defines a value range, eg the duration of an update loop.
+ * Can be queried to provide a progression.
  */
 public class Range {
 
