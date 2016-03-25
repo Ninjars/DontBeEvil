@@ -41,7 +41,7 @@ public class Incrementer implements IncrementerReadout {
     }
 
     @Override
-    public int getSortOrder() {
+    public Integer getSortOrder() {
         // TODO
         return 0;
     }
