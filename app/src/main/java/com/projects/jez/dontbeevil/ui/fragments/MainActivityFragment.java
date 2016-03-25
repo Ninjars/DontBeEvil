@@ -2,6 +2,7 @@ package com.projects.jez.dontbeevil.ui.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,8 @@ import com.projects.jez.utils.react.TextViewProperties;
  * A placeholder fragment containing a simple view.
  */
 public class MainActivityFragment extends Fragment {
+    private static final String TAG = MainActivityFragment.class.getSimpleName();
+    private static final boolean DLOG = true;
 
     public MainActivityFragment() {
 
@@ -73,7 +76,15 @@ public class MainActivityFragment extends Fragment {
                 TextViewProperties.bindTextProperty(readoutValue, readoutValueText);
             }
         });
+        readoutAdapter.setSelectionListener(new ItemSelectionHandler<Incrementer>() {
+            @Override
+            public void onSelected(Incrementer item) {
+                if (DLOG) Log.d(TAG, "onSelected() item " + item.getId());
+                item.increment();
+            }
+        });
         ListView listView = (ListView) view.findViewById(R.id.readout_list);
         listView.setAdapter(readoutAdapter);
+        listView.setOnItemClickListener(readoutAdapter);
     }
 }
