@@ -1,0 +1,38 @@
+[
+	{
+		"id": "plays",
+		"metadata": {
+			"title": "Play",
+			"caption": "Play the game!",
+			"sort_order": 0,
+			"loop_period": 3000,
+			"base_cost": [
+
+			],
+			"per_level_factor": [
+
+			]
+		}
+	},
+	{
+		"id": "players",
+		"metadata": {
+			"title": "Player",
+			"caption": "Tell a friend!",
+			"sort_order": 10,
+			"loop_period": 3000,
+			"base_cost": [
+				{
+					"value": 1,
+					"currency": "plays"
+				}
+			],
+			"per_level_factor": [
+				{
+					"value": 1.5,
+					"currency": "plays"
+				}
+			]
+		}
+	}
+]
