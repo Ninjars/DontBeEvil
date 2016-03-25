@@ -1,5 +1,6 @@
 package com.projects.jez.dontbeevil.data;
 
+import com.projects.jez.dontbeevil.content.IncrementerScript;
 import com.projects.jez.dontbeevil.state.IncrementerReadout;
 import com.projects.jez.utils.observable.Observable;
 
@@ -8,11 +9,12 @@ import com.projects.jez.utils.observable.Observable;
  */
 public class Incrementer implements IncrementerReadout {
     private final String id;
-    private final IncrementableValue value;
+    private final IncrementableValue value = new IncrementableValue();
+    private final IncrementerMetadata metadata;
 
-    public Incrementer(String id, IncrementableValue value) {
-        this.id = id;
-        this.value = value;
+    public Incrementer(IncrementerScript arg) {
+        id = arg.getId();
+        metadata = new IncrementerMetadata(arg.getMetadata());
     }
 
     public String getId() {
@@ -30,19 +32,16 @@ public class Incrementer implements IncrementerReadout {
 
     @Override
     public String getTitle() {
-        // TODO
-        return id;
+        return metadata.getTitle();
     }
 
     @Override
     public String getCaption() {
-        // TODO
-        return "insert caption here";
+        return metadata.getCaption();
     }
 
     @Override
     public Integer getSortOrder() {
-        // TODO
-        return 0;
+        return metadata.getSortOrder();
     }
 }
