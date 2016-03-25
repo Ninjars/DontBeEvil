@@ -41,7 +41,7 @@ public class MainActivityFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        final GameManager gameManager = Environment.getInstance().getGameManager();
+        final GameManager gameManager = Environment.getInstance(getContext()).getGameManager();
         View view = getView();
         View playButton = view.findViewById(R.id.play_button);
         playButton.setOnClickListener(new View.OnClickListener() {
@@ -54,7 +54,7 @@ public class MainActivityFragment extends Fragment {
     }
 
     private static void bindReadouts(View view) {
-        final GameManager gameManager = Environment.getInstance().getGameManager();
+        final GameManager gameManager = Environment.getInstance(view.getContext()).getGameManager();
         GameState gameState = gameManager.getGameState();
         ObservableList<IncrementerReadout> readouts = gameState.getReadouts().sort(new IncrementerReadoutComparator());
 

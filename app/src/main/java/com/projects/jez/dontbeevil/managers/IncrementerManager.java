@@ -1,11 +1,12 @@
 package com.projects.jez.dontbeevil.managers;
 
-import com.projects.jez.dontbeevil.Constants;
-import com.projects.jez.dontbeevil.data.IncrementableValue;
+import android.support.annotation.Nullable;
+
 import com.projects.jez.dontbeevil.data.Incrementer;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by Jez on 18/03/2016.
@@ -13,13 +14,17 @@ import java.util.HashMap;
 public class IncrementerManager {
     private HashMap<String, Incrementer> mIncrementers = new HashMap<>();
 
-    protected IncrementerManager() {
+    protected IncrementerManager(List<Incrementer> incrementers) {
+        for (Incrementer incrementer : incrementers) {
+            addIncrementer(incrementer);
+        }
     }
 
     public void addIncrementer(Incrementer incrementer) {
         mIncrementers.put(incrementer.getId(), incrementer);
     }
 
+    @Nullable
     public Incrementer getIncrementer(String id) {
         return mIncrementers.get(id);
     }
