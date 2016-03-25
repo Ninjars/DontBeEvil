@@ -14,7 +14,6 @@ public class IncrementerManager {
     private HashMap<String, Incrementer> mIncrementers = new HashMap<>();
 
     protected IncrementerManager() {
-        addIncrementer(new Incrementer(Constants.cPlayIncrementerId, new IncrementableValue()));
     }
 
     public void addIncrementer(Incrementer incrementer) {
