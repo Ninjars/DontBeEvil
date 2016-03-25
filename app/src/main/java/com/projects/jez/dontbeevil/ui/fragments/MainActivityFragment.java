@@ -5,16 +5,16 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.projects.jez.dontbeevil.R;
+import com.projects.jez.dontbeevil.data.Incrementer;
 import com.projects.jez.dontbeevil.managers.Environment;
 import com.projects.jez.dontbeevil.managers.GameManager;
 import com.projects.jez.dontbeevil.state.GameState;
-import com.projects.jez.dontbeevil.state.IncrementerReadout;
-import com.projects.jez.dontbeevil.ui.IncrementerReadoutComparator;
+import com.projects.jez.dontbeevil.ui.IncrementerComparator;
+import com.projects.jez.dontbeevil.ui.views.adapters.listadapters.ItemSelectionHandler;
 import com.projects.jez.dontbeevil.ui.views.adapters.listadapters.LayoutRowAdapter;
 import com.projects.jez.dontbeevil.ui.views.adapters.listadapters.ViewDataBinder;
 import com.projects.jez.utils.observable.Mapper;
@@ -56,11 +56,11 @@ public class MainActivityFragment extends Fragment {
     private static void bindReadouts(View view) {
         final GameManager gameManager = Environment.getInstance(view.getContext()).getGameManager();
         GameState gameState = gameManager.getGameState();
-        ObservableList<IncrementerReadout> readouts = gameState.getReadouts().sort(new IncrementerReadoutComparator());
+        ObservableList<Incrementer> readouts = gameState.getReadouts().sort(new IncrementerComparator());
 
-        ListAdapter readoutAdapter = new LayoutRowAdapter<>(view.getContext(), readouts, R.layout.value_readout, new ViewDataBinder<IncrementerReadout>() {
+        LayoutRowAdapter<Incrementer> readoutAdapter = new LayoutRowAdapter<>(view.getContext(), readouts, R.layout.value_readout, new ViewDataBinder<Incrementer>() {
             @Override
-            public void bind(View view, IncrementerReadout data) {
+            public void bind(View view, Incrementer data) {
                 TextView readoutTitle = (TextView) view.findViewById(R.id.readout_title);
                 readoutTitle.setText(data.getTitle());
                 TextView readoutValue = (TextView) view.findViewById(R.id.readout_value);
