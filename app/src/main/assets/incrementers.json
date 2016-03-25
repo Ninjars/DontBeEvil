@@ -4,14 +4,26 @@
 		"metadata": {
 			"title": "Play",
 			"caption": "Play the game!",
-			"sort_order": 0,
-			"charge_time": 3000,
-			"auto_loop": false,
+			"sort_order": 0
+		},
+		"purchase_data": {
 			"base_cost": [
-
+				{
+					"target_id": "plays",
+					"value": 1
+				}
 			],
 			"per_level_factor": [
-
+				{
+					"target_id": "plays",
+					"value": 1.5
+				}
+			],
+			"effects": [
+				{
+					"target_id": "players",
+					"change": 1
+				}
 			]
 		}
 	},
@@ -20,18 +32,34 @@
 		"metadata": {
 			"title": "Player",
 			"caption": "Tell a friend!",
-			"sort_order": 10,
-			"charge_time": 3000,
+			"sort_order": 10
+		},
+		"purchase_data": {
 			"base_cost": [
 				{
-					"value": 1,
-					"currency": "plays"
+					"target_id": "plays",
+					"value": 1
 				}
 			],
 			"per_level_factor": [
 				{
-					"value": 1.5,
-					"currency": "plays"
+					"target_id": "plays",
+					"value": 1.5
+				}
+			],
+			"effects": [
+				{
+					"target_id": "players",
+					"value": 1
+				}
+			]
+		},
+		"loop_data": {
+			"charge_time": 3000,
+			"effects": [
+				{
+					"target_id": "plays",
+					"value": 1
 				}
 			]
 		}

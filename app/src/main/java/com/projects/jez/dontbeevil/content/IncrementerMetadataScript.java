@@ -2,8 +2,6 @@ package com.projects.jez.dontbeevil.content;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.List;
-
 /**
  * Created by Jez on 25/03/2016.
  */
@@ -14,14 +12,6 @@ public class IncrementerMetadataScript {
     String caption;
     @SerializedName("sort_order")
     Integer sortOrder;
-    @SerializedName("base_cost")
-    List<CostScript> baseCost;
-    @SerializedName("per_level_factor")
-    List<CostScript> perLevelCostFactor;
-    @SerializedName("charge_time")
-    long chargeTime;
-    @SerializedName("auto_loop")
-    boolean autoLoop = true;
 
     public String getTitle() {
         return title;
@@ -33,21 +23,5 @@ public class IncrementerMetadataScript {
 
     public Integer getSortOrder() {
         return sortOrder;
-    }
-
-    public List<CostScript> getBaseCost() {
-        return baseCost;
-    }
-
-    public List<CostScript> getPerLevelCostFactor() {
-        return perLevelCostFactor;
-    }
-
-    public Long getChargeTime() {
-        return chargeTime;
-    }
-
-    public boolean isAutoLooping() {
-        return autoLoop;
     }
 }

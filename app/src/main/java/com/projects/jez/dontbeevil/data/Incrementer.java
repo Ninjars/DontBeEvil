@@ -16,10 +16,16 @@ public class Incrementer {
     private final String id;
     private final IncrementableValue value = new IncrementableValue();
     private final IncrementerMetadata metadata;
+    private final LoopTaskManager taskManager;
+    private final PurchaseData purchaseData;
+    private final LoopData loopData;
 
     public Incrementer(IncrementerScript arg, LoopTaskManager taskManager) {
+        this.taskManager = taskManager;
         id = arg.getId();
         metadata = new IncrementerMetadata(arg.getMetadata());
+        purchaseData = new PurchaseData(arg.getPurchaseData());
+        loopData = arg.getLoopData() == null ? null : new LoopData(arg.getLoopData());
     }
 
     public String getId() {
