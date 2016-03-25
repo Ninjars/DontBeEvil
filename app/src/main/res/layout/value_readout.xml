@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:padding="@dimen/basic_padding"
     >
     <TextView
         android:id="@+id/readout_title"
@@ -14,7 +14,15 @@
         android:id="@+id/readout_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/readout_title"
+        android:layout_alignBaseline="@id/readout_title"
         android:paddingStart="@dimen/basic_padding"
         android:paddingLeft="@dimen/basic_padding"
         />
-</LinearLayout>
+    <ProgressBar
+        android:id="@+id/readout_progress"
+        android:layout_below="@id/readout_title"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/readout_progress"
+        />
+</RelativeLayout>

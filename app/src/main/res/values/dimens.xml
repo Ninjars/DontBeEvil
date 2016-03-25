@@ -5,4 +5,5 @@
     <dimen name="fab_margin">16dp</dimen>
 
     <dimen name="basic_padding">8dp</dimen>
+    <dimen name="readout_progress">4dp</dimen>
 </resources>
