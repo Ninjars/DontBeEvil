@@ -16,7 +16,7 @@ public class LoopTaskManager {
 
     private final HashMap<String, LoopTaskHandler> mTaskHandlers = new HashMap<>();
 
-    public Observable<Box<Range>> startLoopingTask(String id, Runnable task, long period) {
+    public Observable<Box<Range>> startLoopingTask(String id, long period, Runnable task) {
         if (mTaskHandlers.containsKey(id)) {
             throw new DuplicateLoopTaskRuntimeError(id);
         }
