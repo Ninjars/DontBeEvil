@@ -7,10 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.projects.jez.dontbeevil.data.Incrementer;
-import com.projects.jez.utils.MapperUtils;
 import com.projects.jez.utils.StreamUtils;
-import com.projects.jez.utils.observable.Mapper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,19 +24,13 @@ public class ContentLoader {
     private static final boolean DLOG = true;
     private static final Gson gson = new Gson();
     private static final JsonParser parser = new JsonParser();
-    private final List<Incrementer> mIncrementers;
+    private final List<IncrementerScript> mIncrementers;
 
     public ContentLoader(Context context) {
-        mIncrementers = MapperUtils.optionalMapOptionalList(loadAssetList(context, "incrementers.json", IncrementerScript.class), new Mapper<IncrementerScript, Incrementer>() {
-            @Override
-            public Incrementer map(IncrementerScript arg) {
-                if (DLOG) Log.d(TAG, "creating incrementer with id " + arg.getId());
-                return new Incrementer(arg);
-            }
-        });
+        mIncrementers = loadAssetList(context, "incrementers.json", IncrementerScript.class);
     }
 
-    public List<Incrementer> getIncrementers() {
+    public List<IncrementerScript> getIncrementers() {
         return mIncrementers;
     }
 

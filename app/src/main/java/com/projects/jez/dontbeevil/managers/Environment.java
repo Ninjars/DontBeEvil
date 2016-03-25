@@ -12,13 +12,12 @@ public final class Environment {
     private static Environment instance = null;
 
     private final IncrementerManager incrementerManager;
-    private final GameManager gameManager;
     private final LoopTaskManager taskManager;
+    private final ContentLoader contentLoader;
 
     private Environment(Context context) {
-        ContentLoader contentLoader = new ContentLoader(context);
-        incrementerManager = new IncrementerManager(contentLoader.getIncrementers());
-        gameManager = new GameManager(incrementerManager);
+        contentLoader = new ContentLoader(context);
+        incrementerManager = new IncrementerManager();
         taskManager = new LoopTaskManager();
     }
 
@@ -33,11 +32,11 @@ public final class Environment {
         return incrementerManager;
     }
 
-    public GameManager getGameManager() {
-        return gameManager;
-    }
-
     public LoopTaskManager getTaskManager() {
         return taskManager;
+    }
+
+    public ContentLoader getContentLoader() {
+        return contentLoader;
     }
 }

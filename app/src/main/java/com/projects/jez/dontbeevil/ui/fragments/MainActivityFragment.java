@@ -29,9 +29,16 @@ import com.projects.jez.utils.react.TextViewProperties;
 public class MainActivityFragment extends Fragment {
     private static final String TAG = MainActivityFragment.class.getSimpleName();
     private static final boolean DLOG = true;
+    private GameManager mGameManager;
 
     public MainActivityFragment() {
 
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mGameManager = new GameManager(Environment.getInstance(getContext()));
     }
 
     @Override
@@ -44,20 +51,18 @@ public class MainActivityFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        final GameManager gameManager = Environment.getInstance(getContext()).getGameManager();
         View view = getView();
         View playButton = view.findViewById(R.id.play_button);
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                gameManager.getPlaysIncrementer().increment();
+                mGameManager.getPlaysIncrementer().increment();
             }
         });
-        bindReadouts(view);
+        bindReadouts(view, mGameManager);
     }
 
-    private static void bindReadouts(View view) {
-        final GameManager gameManager = Environment.getInstance(view.getContext()).getGameManager();
+    private static void bindReadouts(View view, GameManager gameManager) {
         GameState gameState = gameManager.getGameState();
         ObservableList<Incrementer> readouts = gameState.getReadouts().sort(new IncrementerComparator());
 

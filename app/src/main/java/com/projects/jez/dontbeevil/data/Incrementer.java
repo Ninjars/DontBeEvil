@@ -3,6 +3,7 @@ package com.projects.jez.dontbeevil.data;
 import android.util.Log;
 
 import com.projects.jez.dontbeevil.content.IncrementerScript;
+import com.projects.jez.dontbeevil.engine.LoopTaskManager;
 import com.projects.jez.utils.observable.Observable;
 
 /**
@@ -16,7 +17,7 @@ public class Incrementer {
     private final IncrementableValue value = new IncrementableValue();
     private final IncrementerMetadata metadata;
 
-    public Incrementer(IncrementerScript arg) {
+    public Incrementer(IncrementerScript arg, LoopTaskManager taskManager) {
         id = arg.getId();
         metadata = new IncrementerMetadata(arg.getMetadata());
     }

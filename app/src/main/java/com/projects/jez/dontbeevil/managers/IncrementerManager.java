@@ -6,7 +6,6 @@ import com.projects.jez.dontbeevil.data.Incrementer;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * Created by Jez on 18/03/2016.
@@ -14,10 +13,8 @@ import java.util.List;
 public class IncrementerManager {
     private HashMap<String, Incrementer> mIncrementers = new HashMap<>();
 
-    protected IncrementerManager(List<Incrementer> incrementers) {
-        for (Incrementer incrementer : incrementers) {
-            addIncrementer(incrementer);
-        }
+    protected IncrementerManager() {
+        // protected constructor
     }
 
     public void addIncrementer(Incrementer incrementer) {
