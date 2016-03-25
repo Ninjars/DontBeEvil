@@ -23,8 +23,6 @@ public class GameManager {
 
     public GameManager(final Environment environment) {
         mEnvironment = environment;
-        mGameState = new GameState(environment.getIncrementerManager());
-
         List<Incrementer> incrementers = MapperUtils.optionalMapOptionalList(environment.getContentLoader().getIncrementers(), new Mapper<IncrementerScript, Incrementer>() {
             @Override
             public Incrementer map(IncrementerScript arg) {
@@ -32,6 +30,8 @@ public class GameManager {
                 return new Incrementer(arg, environment.getTaskManager());
             }
         });
+        environment.getIncrementerManager().addAll(incrementers);
+        mGameState = new GameState(environment.getIncrementerManager());
     }
 
     public GameState getGameState() {
