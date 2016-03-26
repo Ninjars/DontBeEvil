@@ -10,7 +10,7 @@ import com.projects.jez.utils.observable.Source;
 /**
  * Created by jez on 22/03/2016.
  */
-public class LoopTaskHandler {
+public class LoopTaskHandler implements LoopingTask {
 
     private final Handler cLoopHandler = new Handler(Looper.getMainLooper());
     private final Source<Box<Range>> mRange = new Source<>(new Box<Range>(null));
@@ -23,8 +23,8 @@ public class LoopTaskHandler {
         mTask = new Runnable() {
             @Override
             public void run() {
-                update();
                 task.run();
+                update();
             }
         };
         mLoopPeriod = loopTime;

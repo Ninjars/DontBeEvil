@@ -24,5 +24,8 @@
         android:layout_below="@id/readout_title"
         android:layout_width="match_parent"
         android:layout_height="@dimen/readout_progress"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:max="1000"
+        android:indeterminate="false"
         />
 </RelativeLayout>
