@@ -9,6 +9,8 @@ import com.projects.jez.dontbeevil.engine.Range;
 import com.projects.jez.dontbeevil.errors.UnknownIncrementerRuntimeError;
 import com.projects.jez.dontbeevil.managers.IncrementerManager;
 import com.projects.jez.utils.Box;
+import com.projects.jez.utils.Reducer;
+import com.projects.jez.utils.observable.Mapper;
 import com.projects.jez.utils.observable.Observable;
 import com.projects.jez.utils.observable.Source;
 
@@ -26,32 +28,50 @@ public class Incrementer {
     private final PurchaseData purchaseData;
     private final LoopData loopData;
     private final IncrementerManager incrementerManager;
-    private final LoopingTask loopTask;
+    private final Observable<Box<LoopingTask>> loopTask;
 
-    public Incrementer(IncrementerScript arg, IncrementerManager incManager, LoopTaskManager taskManager) {
-        this.taskManager = taskManager;
+    public Incrementer(IncrementerScript arg, IncrementerManager incManager, LoopTaskManager taskMngr) {
+        this.taskManager = taskMngr;
         this.incrementerManager = incManager;
         id = arg.getId();
         metadata = new IncrementerMetadata(arg.getMetadata());
         purchaseData = new PurchaseData(arg.getPurchaseData());
         loopData = arg.getLoopData() == null ? null : new LoopData(arg.getLoopData());
         if (loopData != null) {
-            loopTask = taskManager.startLoopingTask(id, loopData.getChargeTime(), new Runnable() {
+            // only really want to evaluate when we have the first value sent through
+            loopTask = getValue().reduce(0.0, new Reducer<Double, Double>() {
                 @Override
-                public void run() {
-                    @SuppressWarnings("ConstantConditions")
-                    double multiplier = getCurrentValue();
-                    for (Effect effect : loopData.getEffects()) {
-                        Incrementer inc = incrementerManager.getIncrementer(effect.getTargetId());
-                        if (inc == null) {
-                            throw new UnknownIncrementerRuntimeError(effect.getTargetId());
-                        }
-                        double change = effect.getValue() * multiplier;
-                        inc.addValue(change);
-                    }
+                public Double reduce(Double old, Double newVal) {
+                    return old == 0 || newVal == null ? newVal : null;
+                }
+            }).map(new Mapper<Double, Box<LoopingTask>>() {
+                @Override
+                public Box<LoopingTask> map(Double arg) {
+                    if ((loopTask == null
+                            || loopTask.getCurrent() == null
+                            || loopTask.getCurrent().getValue() == null) && arg > 0) {
+                        return new Box<>(taskManager.startLoopingTask(id, loopData.getChargeTime(), new Runnable() {
+                            @Override
+                            public void run() {
+                                @SuppressWarnings("ConstantConditions")
+                                double multiplier = getCurrentValue();
+                                for (Effect effect : loopData.getEffects()) {
+                                    Incrementer inc = incrementerManager.getIncrementer(effect.getTargetId());
+                                    if (inc == null) {
+                                        throw new UnknownIncrementerRuntimeError(effect.getTargetId());
+                                    }
+                                    double change = effect.getValue() * multiplier;
+                                    inc.addValue(change);
+                                }
 
+                            }
+                        }));
+                    } else {
+                        return new Box<>(null);
+                    }
                 }
             });
+
         } else {
             loopTask = null;
         }
@@ -60,7 +80,12 @@ public class Incrementer {
     @Nullable
     public Observable<Box<Range>> getRangeObservable() {
         if (loopTask == null) return null;
-        return loopTask.getRangeObservable();
+        return Observable.flatten(loopTask.map(new Mapper<Box<LoopingTask>, Observable<Box<Range>>>() {
+            @Override
+            public Observable<Box<Range>> map(Box<LoopingTask> arg) {
+                return arg.valueNotNull() ? arg.getValue().getRangeObservable() : new Observable<>(new Box<Range>(null));
+            }
+        }));
     }
 
     public String getId() {
