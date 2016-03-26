@@ -95,12 +95,9 @@ public class MainActivityFragment extends Fragment {
                     Observable<Integer> progressObs = rangeObs.join(refreshObs).map(new Mapper<Pair<Box<Range>, Boolean>, Integer>() {
                         @Override
                         public Integer map(Pair<Box<Range>, Boolean> arg) {
-                            if (DLOG) Log.v(TAG, "refreshing progress bar " + data.getId());
                             Range range = arg.first.getValue();
                             if (range == null) return 0;
                             double progression = range.getCappedProgression(System.currentTimeMillis());
-                            if (DLOG) Log.v(TAG, "> progression: " + progression +
-                                    "\n> value: " + ((int) Math.floor(progression * progressBar.getMax())));
                             return (int) Math.floor(progression * progressBar.getMax());
                         }
                     });
