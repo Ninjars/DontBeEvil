@@ -27,7 +27,7 @@ public class GameManager {
             @Override
             public Incrementer map(IncrementerScript arg) {
                 if (DLOG) Log.d(TAG, "creating incrementer with id " + arg.getId());
-                return new Incrementer(arg, environment.getTaskManager());
+                return new Incrementer(arg, environment.getIncrementerManager(), environment.getTaskManager());
             }
         });
         environment.getIncrementerManager().addAll(incrementers);
