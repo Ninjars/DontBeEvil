@@ -2,8 +2,6 @@ package com.projects.jez.dontbeevil.engine;
 
 import com.projects.jez.dontbeevil.errors.DuplicateLoopTaskRuntimeError;
 import com.projects.jez.dontbeevil.errors.UnknownLoopTaskRuntimeError;
-import com.projects.jez.utils.Box;
-import com.projects.jez.utils.observable.Observable;
 
 import java.util.HashMap;
 
@@ -16,14 +14,14 @@ public class LoopTaskManager {
 
     private final HashMap<String, LoopTaskHandler> mTaskHandlers = new HashMap<>();
 
-    public Observable<Box<Range>> startLoopingTask(String id, long period, Runnable task) {
+    public LoopingTask startLoopingTask(String id, long period, Runnable task) {
         if (mTaskHandlers.containsKey(id)) {
             throw new DuplicateLoopTaskRuntimeError(id);
         }
         LoopTaskHandler handler = new LoopTaskHandler(task, period);
         mTaskHandlers.put(id, handler);
         handler.start();
-        return handler.getRangeObservable();
+        return handler;
     }
 
     public void updatePeriod(String id, long newPeriod) {
