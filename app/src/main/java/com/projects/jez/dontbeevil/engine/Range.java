@@ -19,6 +19,6 @@ public class Range {
     }
 
     public double getCappedProgression(long currentValue) {
-        return Math.max(0, Math.min(1.0, currentValue - mStart / mRange));
+        return Math.max(0, Math.min(1.0, (currentValue - mStart) / (float) mRange));
     }
 }
