@@ -15,7 +15,7 @@ public class Range {
     public Range(long start, long range) {
         mStart = start;
         mRange = range;
-        if (BuildConfig.DEBUG && mRange > 0) throw new RuntimeException("cannot have negative range: value was " + range);
+        if (BuildConfig.DEBUG && mRange <= 0) throw new RuntimeException("cannot have negative range: value was " + range);
     }
 
     public double getCappedProgression(long currentValue) {
