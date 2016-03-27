@@ -141,7 +141,7 @@ public class Incrementer {
 
     public void preformPurchaseActions() {
         if (DLOG) Log.d(TAG, "preformPurchaseActions()");
-        double multiplier = getCurrentValue();
+        double multiplier = getCurrentValue() * purchaseData.getLevelFactor();
         for (Effect effect : purchaseData.getBaseCosts()) {
             Incrementer inc = incrementerManager.getIncrementer(effect.getTargetId());
             if (inc == null) {
