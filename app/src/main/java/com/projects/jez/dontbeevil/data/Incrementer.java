@@ -1,6 +1,7 @@
 package com.projects.jez.dontbeevil.data;
 
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.projects.jez.dontbeevil.content.IncrementerScript;
 import com.projects.jez.dontbeevil.engine.LoopTaskManager;
@@ -31,6 +32,7 @@ public class Incrementer {
     private final Observable<Box<LoopingTask>> loopTask;
 
     public Incrementer(IncrementerScript arg, IncrementerManager incManager, LoopTaskManager taskMngr) {
+        if (DLOG) Log.d(TAG, "init() " + arg.getId());
         this.taskManager = taskMngr;
         this.incrementerManager = incManager;
         id = arg.getId();
@@ -118,6 +120,7 @@ public class Incrementer {
     }
 
     public void preformPurchaseActions() {
+        if (DLOG) Log.d(TAG, "preformPurchaseActions()");
         double multiplier = getCurrentValue();
         for (Effect effect : purchaseData.getBaseCosts()) {
             Incrementer inc = incrementerManager.getIncrementer(effect.getTargetId());
@@ -125,14 +128,16 @@ public class Incrementer {
                 throw new UnknownIncrementerRuntimeError(effect.getTargetId());
             }
             double change = effect.getValue() * multiplier;
+            if (DLOG) Log.d(TAG, "> applying effect " + effect.getTargetId() + " " + -change);
             inc.addValue(-change);
         }
-        for (Effect effect : purchaseData.getPerLevelEffects()) {
+        for (Effect effect : purchaseData.getEffect()) {
             Incrementer inc = incrementerManager.getIncrementer(effect.getTargetId());
             if (inc == null) {
                 throw new UnknownIncrementerRuntimeError(effect.getTargetId());
             }
             double change = effect.getValue();
+            if (DLOG) Log.d(TAG, "> applying effect " + effect.getTargetId() + " " + change);
             inc.addValue(change);
         }
     }

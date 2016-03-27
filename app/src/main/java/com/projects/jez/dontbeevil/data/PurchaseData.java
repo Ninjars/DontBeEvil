@@ -13,7 +13,7 @@ import java.util.List;
 public class PurchaseData {
     private final List<Effect> baseCosts;
     private final List<Effect> perLevelCostFactors;
-    private final List<Effect> perLevelEffects;
+    private final List<Effect> effect;
 
     public PurchaseData(PurchaseDataScript data) {
         baseCosts = MapperUtils.map(data.getBaseCost(), new Mapper<EffectScript, Effect>() {
@@ -28,7 +28,7 @@ public class PurchaseData {
                 return new Effect(arg);
             }
         });
-        perLevelEffects = MapperUtils.map(data.getEffects(), new Mapper<EffectScript, Effect>() {
+        effect = MapperUtils.map(data.getEffects(), new Mapper<EffectScript, Effect>() {
             @Override
             public Effect map(EffectScript arg) {
                 return new Effect(arg);
@@ -44,7 +44,7 @@ public class PurchaseData {
         return perLevelCostFactors;
     }
 
-    public List<Effect> getPerLevelEffects() {
-        return perLevelEffects;
+    public List<Effect> getEffect() {
+        return effect;
     }
 }
