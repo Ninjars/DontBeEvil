@@ -8,10 +8,12 @@ import com.projects.jez.dontbeevil.content.EffectScript;
 public class Effect {
     private final String targetId;
     private final double value;
+    private final Incrementer.Function function;
 
     public Effect(EffectScript effect) {
         targetId = effect.getTargetId();
         value = effect.getValue();
+        function = effect.getFunction() == null ? Incrementer.Function.ADD : Incrementer.Function.getFunctionFromKey(effect.getFunction());
     }
 
     public String getTargetId() {
@@ -25,5 +27,9 @@ public class Effect {
     @Override
     public String toString() {
         return "<" + Effect.class.getSimpleName() + " " + targetId + " " + value + ">";
+    }
+
+    public Incrementer.Function getFunction() {
+        return function;
     }
 }

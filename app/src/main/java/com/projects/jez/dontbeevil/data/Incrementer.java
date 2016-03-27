@@ -31,6 +31,26 @@ public class Incrementer {
     private final IncrementerManager incrementerManager;
     private final Observable<Box<LoopingTask>> loopTask;
 
+    public enum Function {
+        ADD("+"),
+        SUB("-"),
+        MULT("*"),
+        DIV("/")
+        ;
+        String key;
+        Function(String key) {
+            this.key = key;
+        }
+        public static Function getFunctionFromKey(String key) {
+            for (Function v : values()) {
+                if (v.key.equals(key)) {
+                    return v;
+                }
+            }
+            throw new RuntimeException("no match found for key " + key);
+        }
+    }
+
     public Incrementer(IncrementerScript arg, IncrementerManager incManager, LoopTaskManager taskMngr) {
         if (DLOG) Log.d(TAG, "init() " + arg.getId());
         this.taskManager = taskMngr;

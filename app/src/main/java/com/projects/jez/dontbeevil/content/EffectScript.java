@@ -9,6 +9,7 @@ public class EffectScript {
     @SerializedName("target_id")
     String targetId;
     double value;
+    String type;
 
     public String getTargetId() {
         return targetId;
@@ -16,5 +17,9 @@ public class EffectScript {
 
     public double getValue() {
         return value;
+    }
+
+    public String getFunction() {
+        return type;
     }
 }
