@@ -10,19 +10,19 @@
 			"base_cost": [
 				{
 					"target_id": "plays",
-					"value": 1
+					"value": 0
 				}
 			],
 			"per_level_factor": [
 				{
 					"target_id": "plays",
-					"value": 1.5
+					"value": 1
 				}
 			],
 			"effects": [
 				{
-					"target_id": "players",
-					"change": 1
+					"target_id": "plays",
+					"value": 1
 				}
 			]
 		}
