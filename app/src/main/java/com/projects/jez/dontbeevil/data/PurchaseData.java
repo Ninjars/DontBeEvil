@@ -11,18 +11,12 @@ import java.util.List;
  * Created by Jez on 25/03/2016.
  */
 public class PurchaseData {
+    private final double levelFactor;
     private final List<Effect> baseCosts;
-    private final List<Effect> perLevelCostFactors;
     private final List<Effect> effect;
 
     public PurchaseData(PurchaseDataScript data) {
         baseCosts = MapperUtils.map(data.getBaseCost(), new Mapper<EffectScript, Effect>() {
-            @Override
-            public Effect map(EffectScript arg) {
-                return new Effect(arg);
-            }
-        });
-        perLevelCostFactors = MapperUtils.map(data.getPerLevelCostFactor(), new Mapper<EffectScript, Effect>() {
             @Override
             public Effect map(EffectScript arg) {
                 return new Effect(arg);
@@ -34,14 +28,15 @@ public class PurchaseData {
                 return new Effect(arg);
             }
         });
+        levelFactor = data.getLevelFactor();
     }
 
     public List<Effect> getBaseCosts() {
         return baseCosts;
     }
 
-    public List<Effect> getPerLevelCostFactors() {
-        return perLevelCostFactors;
+    public double getLevelFactor() {
+        return levelFactor;
     }
 
     public List<Effect> getEffect() {
