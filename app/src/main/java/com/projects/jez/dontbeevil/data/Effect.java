@@ -21,4 +21,9 @@ public class Effect {
     public double getValue() {
         return value;
     }
+
+    @Override
+    public String toString() {
+        return "<" + Effect.class.getSimpleName() + " " + targetId + " " + value + ">";
+    }
 }
