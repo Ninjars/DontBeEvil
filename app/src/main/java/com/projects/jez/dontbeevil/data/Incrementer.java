@@ -1,5 +1,6 @@
 package com.projects.jez.dontbeevil.data;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -10,10 +11,14 @@ import com.projects.jez.dontbeevil.engine.Range;
 import com.projects.jez.dontbeevil.errors.UnknownIncrementerRuntimeError;
 import com.projects.jez.dontbeevil.managers.IncrementerManager;
 import com.projects.jez.utils.Box;
+import com.projects.jez.utils.MapperUtils;
 import com.projects.jez.utils.Reducer;
 import com.projects.jez.utils.observable.Mapper;
 import com.projects.jez.utils.observable.Observable;
 import com.projects.jez.utils.observable.Source;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Jez on 18/03/2016.
@@ -30,6 +35,8 @@ public class Incrementer {
     private final LoopData loopData;
     private final IncrementerManager incrementerManager;
     private final Observable<Box<LoopingTask>> loopTask;
+    private final HashMap<String, Double> multipliers = new HashMap<>();
+    private double currentMultiplier;
 
     public enum Function {
         ADD("+"),
@@ -55,6 +62,7 @@ public class Incrementer {
         if (DLOG) Log.d(TAG, "init() " + arg.getId());
         this.taskManager = taskMngr;
         this.incrementerManager = incManager;
+        currentMultiplier = calculateCurrentMultiplier();
         id = arg.getId();
         metadata = new IncrementerMetadata(arg.getMetadata());
         purchaseData = new PurchaseData(arg.getPurchaseData());
@@ -76,14 +84,15 @@ public class Incrementer {
                             @Override
                             public void run() {
                                 @SuppressWarnings("ConstantConditions")
-                                double multiplier = getCurrentValue();
+                                double count = getCurrentValue();
                                 for (Effect effect : loopData.getEffects()) {
-                                    Incrementer inc = incrementerManager.getIncrementer(effect.getTargetId());
+                                    String targetId = effect.getTargetId();
+                                    Incrementer inc = incrementerManager.getIncrementer(targetId);
                                     if (inc == null) {
-                                        throw new UnknownIncrementerRuntimeError(effect.getTargetId());
+                                        throw new UnknownIncrementerRuntimeError(targetId);
                                     }
-                                    double change = effect.getValue() * multiplier;
-                                    inc.applyChange(effect.getFunction(), change);
+                                    double change = effect.getValue() * count * currentMultiplier;
+                                    inc.applyChange(id, effect.getFunction(), change);
                                 }
 
                             }
@@ -110,6 +119,36 @@ public class Incrementer {
             default:
                 Log.e(TAG, "unsupported operation when lacking id: " + function);
         }
+    }
+
+    public void applyChange(@NonNull String applierId, Function function, double change) {
+        switch(function) {
+            case ADD:
+            case SUB:
+                applyChange(function, change);
+                break;
+            case MULT:
+                applyMultiplier(applierId, change);
+            case DIV:
+                applyMultiplier(applierId, 1.0 / change);
+                break;
+            default:
+                Log.e(TAG, "unsupported operation when lacking id: " + function);
+        }
+    }
+
+    private void applyMultiplier(String applierId, double change) {
+        multipliers.put(applierId, change);
+        currentMultiplier = calculateCurrentMultiplier();
+    }
+
+    private double calculateCurrentMultiplier() {
+        return MapperUtils.reduce(new ArrayList<>(multipliers.values()), 1.0, new Reducer<Double, Double>() {
+            @Override
+            public Double reduce(Double accumulatedValue, Double deltaValue) {
+                return accumulatedValue + deltaValue;
+            }
+        });
     }
 
     @Nullable
@@ -161,13 +200,14 @@ public class Incrementer {
             inc.applyChange(effect.getFunction(), change);
         }
         for (Effect effect : purchaseData.getEffect()) {
-            Incrementer inc = incrementerManager.getIncrementer(effect.getTargetId());
+            String targetId = effect.getTargetId();
+            Incrementer inc = incrementerManager.getIncrementer(targetId);
             if (inc == null) {
-                throw new UnknownIncrementerRuntimeError(effect.getTargetId());
+                throw new UnknownIncrementerRuntimeError(targetId);
             }
             double change = effect.getValue();
             if (DLOG) Log.d(TAG, "> applying effect " + effect.getTargetId() + " " + change);
-            inc.applyChange(effect.getFunction(), change);
+            inc.applyChange(id, effect.getFunction(), change);
         }
     }
 }
