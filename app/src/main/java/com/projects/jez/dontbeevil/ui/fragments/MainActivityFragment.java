@@ -62,7 +62,7 @@ public class MainActivityFragment extends Fragment {
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mGameManager.getPlaysIncrementer().addValue(1);
+                mGameManager.getPlaysIncrementer().applyChange(Incrementer.Function.ADD, 1);
             }
         });
         bindReadouts(view, mGameManager);

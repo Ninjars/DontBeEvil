@@ -83,7 +83,7 @@ public class Incrementer {
                                         throw new UnknownIncrementerRuntimeError(effect.getTargetId());
                                     }
                                     double change = effect.getValue() * multiplier;
-                                    inc.addValue(change);
+                                    inc.applyChange(effect.getFunction(), change);
                                 }
 
                             }
@@ -96,6 +96,19 @@ public class Incrementer {
 
         } else {
             loopTask = null;
+        }
+    }
+
+    public void applyChange(Function function, double change) {
+        switch(function) {
+            case ADD:
+                value.put(getCurrentValue() + change);
+                break;
+            case SUB:
+                value.put(getCurrentValue() - change);
+                break;
+            default:
+                Log.e(TAG, "unsupported operation when lacking id: " + function);
         }
     }
 
@@ -116,10 +129,6 @@ public class Incrementer {
 
     public Observable<Double> getValue() {
         return value.getObservable();
-    }
-
-    public void addValue(double change) {
-        value.put(getCurrentValue() + change);
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -149,7 +158,7 @@ public class Incrementer {
             }
             double change = effect.getValue() * multiplier;
             if (DLOG) Log.d(TAG, "> applying effect " + effect.getTargetId() + " " + -change);
-            inc.addValue(-change);
+            inc.applyChange(effect.getFunction(), change);
         }
         for (Effect effect : purchaseData.getEffect()) {
             Incrementer inc = incrementerManager.getIncrementer(effect.getTargetId());
@@ -158,7 +167,7 @@ public class Incrementer {
             }
             double change = effect.getValue();
             if (DLOG) Log.d(TAG, "> applying effect " + effect.getTargetId() + " " + change);
-            inc.addValue(change);
+            inc.applyChange(effect.getFunction(), change);
         }
     }
 }
