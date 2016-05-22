@@ -1,7 +1,8 @@
 package com.projects.jez.dontbeevil.engine;
 
 import com.projects.jez.utils.Box;
-import com.projects.jez.utils.observable.Observable;
+
+import rx.Observable;
 
 /**
  * Created by jez on 26/03/2016.
