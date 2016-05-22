@@ -3,7 +3,6 @@ package com.projects.jez.dontbeevil.ui.fragments;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,12 +21,13 @@ import com.projects.jez.dontbeevil.ui.views.adapters.listadapters.ItemSelectionH
 import com.projects.jez.dontbeevil.ui.views.adapters.listadapters.LayoutRowAdapter;
 import com.projects.jez.dontbeevil.ui.views.adapters.listadapters.ViewDataBinder;
 import com.projects.jez.utils.Box;
-import com.projects.jez.utils.RefreshSignalProvider;
-import com.projects.jez.utils.observable.Mapper;
-import com.projects.jez.utils.observable.Observable;
 import com.projects.jez.utils.observable.ObservableList.ObservableList;
-import com.projects.jez.utils.react.ProgressbarProperties;
-import com.projects.jez.utils.react.TextViewProperties;
+
+import java.util.concurrent.TimeUnit;
+
+import rx.Observer;
+import rx.functions.Func1;
+import rx.functions.Func2;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -71,37 +71,63 @@ public class MainActivityFragment extends Fragment {
     private static void bindReadouts(View view, GameManager gameManager) {
         GameState gameState = gameManager.getGameState();
         ObservableList<Incrementer> readouts = gameState.getReadouts().sort(new IncrementerComparator());
-        final Observable<Boolean> refreshObs = RefreshSignalProvider.getInstance().getSignal();
+        final rx.Observable<Long> refreshObs = rx.Observable.interval(300, TimeUnit.MILLISECONDS);
 
         LayoutRowAdapter<Incrementer> readoutAdapter = new LayoutRowAdapter<>(view.getContext(), readouts, R.layout.value_readout, new ViewDataBinder<Incrementer>() {
             @Override
             public void bind(View view, final Incrementer data) {
                 TextView readoutTitle = (TextView) view.findViewById(R.id.readout_title);
                 readoutTitle.setText(data.getTitle());
-                TextView readoutValue = (TextView) view.findViewById(R.id.readout_value);
-                Observable<String> readoutValueText = data.getValue().map(new Mapper<Double, String>() {
+                final TextView readoutValue = (TextView) view.findViewById(R.id.readout_value);
+                rx.Observable<String> readoutValueText = data.getValue().map(new Func1<Double, String>() {
                     @Override
-                    public String map(Double arg) {
-                        return String.valueOf(arg.intValue());
+                    public String call(Double aDouble) {
+                        return String.valueOf(aDouble.intValue());
                     }
                 });
-                TextViewProperties.bindTextProperty(readoutValue, readoutValueText);
+                readoutValueText.subscribe(new Observer<String>() {
+                    @Override
+                    public void onCompleted() {}
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, e.getMessage());
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+                        readoutValue.setText(s);
+                    }
+                });
 
                 final ProgressBar progressBar = (ProgressBar) view.findViewById(R.id.readout_progress);
-                Observable<Box<Range>> rangeObs = data.getRangeObservable();
+                rx.Observable<Box<Range>> rangeObs = data.getRangeObservable();
                 if (rangeObs == null) {
                     progressBar.setVisibility(View.GONE);
                 } else {
-                    Observable<Integer> progressObs = rangeObs.join(refreshObs).map(new Mapper<Pair<Box<Range>, Boolean>, Integer>() {
+                    rx.Observable<Integer> progressObs = rx.Observable.combineLatest(refreshObs, rangeObs, new Func2<Long, Box<Range>, Integer>() {
                         @Override
-                        public Integer map(Pair<Box<Range>, Boolean> arg) {
-                            Range range = arg.first.getValue();
+                        public Integer call(Long aLong, Box<Range> rangeBox) {
+                            Range range = rangeBox.getValue();
                             if (range == null) return 0;
                             double progression = range.getCappedProgression(System.currentTimeMillis());
                             return (int) Math.floor(progression * progressBar.getMax());
                         }
                     });
-                    ProgressbarProperties.bindProgressProperty(progressBar, progressObs);
+                    progressObs.subscribe(new Observer<Integer>() {
+                        @Override
+                        public void onCompleted() {}
+
+                        @Override
+                        public void onError(Throwable e) {
+                            Log.e(TAG, e.getMessage());
+                        }
+
+                        @Override
+                        public void onNext(Integer integer) {
+                            progressBar.setVisibility(integer);
+                        }
+                    });
                 }
             }
         });
