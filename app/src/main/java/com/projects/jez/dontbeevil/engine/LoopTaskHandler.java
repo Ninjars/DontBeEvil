@@ -33,7 +33,12 @@ public class LoopTaskHandler implements LoopingTask {
 
     public void start() {
         lastUpdateStopped = null;
-        update();
+        cLoopHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                update();
+            }
+        });
     }
 
     private void update() {

@@ -87,11 +87,13 @@ public class MainActivityFragment extends Fragment {
                 });
                 readoutValueText.subscribe(new Observer<String>() {
                     @Override
-                    public void onCompleted() {}
+                    public void onCompleted() {
+                        if (DLOG) Log.d(TAG, "readout.onCompleted");
+                    }
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.e(TAG, e.getMessage());
+                        Log.e(TAG, "readout: " + e.getMessage());
                     }
 
                     @Override
@@ -116,11 +118,12 @@ public class MainActivityFragment extends Fragment {
                     });
                     progressObs.subscribe(new Observer<Integer>() {
                         @Override
-                        public void onCompleted() {}
+                        public void onCompleted() {
+                            if (DLOG) Log.d(TAG, "progressVisibilityObs.onCompleted");}
 
                         @Override
                         public void onError(Throwable e) {
-                            Log.e(TAG, e.getMessage());
+                            Log.e(TAG, "progressObs: " + e.getMessage());
                         }
 
                         @Override

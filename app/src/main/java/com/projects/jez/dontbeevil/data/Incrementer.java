@@ -17,6 +17,9 @@ import com.projects.jez.utils.Reducer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import rx.Notification;
+import rx.Observable;
+import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.subjects.BehaviorSubject;
 
@@ -67,21 +70,31 @@ public class Incrementer {
         metadata = new IncrementerMetadata(arg.getMetadata());
         purchaseData = new PurchaseData(arg.getPurchaseData());
         loopData = arg.getLoopData() == null ? null : new LoopData(arg.getLoopData());
+
+        Observable<Double> valueObs = getValue().doOnEach(new Action1<Notification<? super Double>>() {
+            @Override
+            public void call(Notification<? super Double> notification) {
+                Log.i(TAG, "value on next ");
+            }
+        });
+
         if (loopData != null) {
+            if (DLOG) Log.d(TAG, id + " has loop data");
             // only really want to evaluate when we have the first value sent through
             loopTask = getValue().filter(new Func1<Double, Boolean>() {
                 @Override
                 public Boolean call(Double aDouble) {
+                    if (DLOG) Log.d(TAG, id + " take first filter: " + aDouble + " passes? " + (aDouble > 0));
                     return aDouble > 0;
                 }
             }).first().map(new Func1<Double, Box<LoopingTask>>() {
                 @Override
                 public Box<LoopingTask> call(Double arg) {
+                    if (DLOG) Log.d(TAG, id + " loopTask populating");
                     return new Box<>(taskManager.startLoopingTask(id, loopData.getChargeTime(), new Runnable() {
                         @Override
                         public void run() {
-                            @SuppressWarnings("ConstantConditions")
-                            double count = getCurrentValue();
+                            double count = rxValue.getValue();
                             for (Effect effect : loopData.getEffects()) {
                                 String targetId = effect.getTargetId();
                                 Incrementer inc = incrementerManager.getIncrementer(targetId);
@@ -181,7 +194,7 @@ public class Incrementer {
     }
 
     public void preformPurchaseActions() {
-        if (DLOG) Log.d(TAG, "preformPurchaseActions()");
+        if (DLOG) Log.d(TAG, id + " preformPurchaseActions()");
         double multiplier = getCurrentValue() * purchaseData.getLevelFactor();
         for (Effect effect : purchaseData.getBaseCosts()) {
             Incrementer inc = incrementerManager.getIncrementer(effect.getTargetId());
