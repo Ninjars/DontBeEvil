@@ -27,5 +27,6 @@
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:max="1000"
         android:indeterminate="false"
+        android:progress="0"
         />
 </RelativeLayout>

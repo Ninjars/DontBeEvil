@@ -110,6 +110,7 @@ public class MainActivityFragment extends Fragment {
                 if (rangeObs == null) {
                     progressBar.setVisibility(View.GONE);
                 } else {
+                    progressBar.setVisibility(View.VISIBLE);
                     rx.Observable<Integer> progressObs = rx.Observable.combineLatest(refreshObs, rangeObs, new Func2<Long, Box<Range>, Integer>() {
                         @Override
                         public Integer call(Long aLong, Box<Range> rangeBox) {
@@ -122,7 +123,8 @@ public class MainActivityFragment extends Fragment {
                     progressObs.subscribe(new Observer<Integer>() {
                         @Override
                         public void onCompleted() {
-                            if (DLOG) Log.d(TAG, "progressVisibilityObs.onCompleted");}
+                            if (DLOG) Log.d(TAG, "progressVisibilityObs.onCompleted");
+                        }
 
                         @Override
                         public void onError(Throwable e) {
@@ -130,8 +132,8 @@ public class MainActivityFragment extends Fragment {
                         }
 
                         @Override
-                        public void onNext(Integer integer) {
-                            progressBar.setVisibility(integer);
+                        public void onNext(final Integer integer) {
+                            progressBar.setProgress(integer);
                         }
                     });
                 }
