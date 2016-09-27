@@ -35,7 +35,7 @@ import rx.functions.Func2;
 public class MainActivityFragment extends Fragment {
     private static final String TAG = MainActivityFragment.class.getSimpleName();
     private static final boolean DLOG = true;
-    private GameManager mGameManager;
+    private Environment mEnvironment;
 
     public MainActivityFragment() {
 
@@ -44,7 +44,7 @@ public class MainActivityFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        mGameManager = new GameManager(Environment.getInstance(getContext()));
+        mEnvironment = Environment.getInstance(getContext().getApplicationContext());
     }
 
     @Override
@@ -62,10 +62,13 @@ public class MainActivityFragment extends Fragment {
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mGameManager.getPlaysIncrementer().applyChange(Incrementer.Function.ADD, 1);
+                GameManager gameManager = mEnvironment.getGameManager();
+                gameManager.getPlaysIncrementer().applyChange(Incrementer.Function.ADD, 1);
             }
         });
-        bindReadouts(view, mGameManager);
+
+        GameManager gameManager = mEnvironment.getGameManager();
+        bindReadouts(view, gameManager);
     }
 
     private static void bindReadouts(View view, GameManager gameManager) {

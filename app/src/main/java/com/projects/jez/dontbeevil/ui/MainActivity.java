@@ -13,10 +13,14 @@ import com.projects.jez.dontbeevil.R;
 import com.projects.jez.dontbeevil.managers.Environment;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final boolean DLOG = true;
+    private Environment mEnvironment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mEnvironment = Environment.getInstance(this.getApplicationContext());
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -34,11 +38,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        init();
-    }
-
-    private void init() {
-        Environment.getInstance(this);
     }
 
     @Override
@@ -61,5 +60,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public Environment getEnvironment() {
+        return mEnvironment;
     }
 }

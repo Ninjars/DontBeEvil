@@ -14,9 +14,7 @@ import java.util.List;
 public class IncrementerManager {
     private HashMap<String, Incrementer> mIncrementers = new HashMap<>();
 
-    protected IncrementerManager() {
-        // protected constructor
-    }
+    IncrementerManager() {}
 
     public void addIncrementer(Incrementer incrementer) {
         mIncrementers.put(incrementer.getId(), incrementer);
@@ -31,7 +29,7 @@ public class IncrementerManager {
         return mIncrementers.values();
     }
 
-    public void addAll(List<Incrementer> incrementers) {
+    void addAll(List<Incrementer> incrementers) {
         for (Incrementer incrementer : incrementers) {
             mIncrementers.put(incrementer.getId(), incrementer);
         }
