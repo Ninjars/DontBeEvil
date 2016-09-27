@@ -106,6 +106,7 @@ public class Incrementer {
     }
 
     public void applyChange(Function function, double change) {
+        if (DLOG) Log.d(TAG, id + " applyChange() - simple " + function + " " + change);
         switch(function) {
             case ADD:
                 rxValue.onNext(rxValue.getValue() + change);
@@ -119,6 +120,7 @@ public class Incrementer {
     }
 
     public void applyChange(@NonNull String applierId, Function function, double change) {
+        if (DLOG) Log.d(TAG, id + " applyChange() " + function + " " + change);
         switch(function) {
             case ADD:
             case SUB:
@@ -192,7 +194,7 @@ public class Incrementer {
                 throw new UnknownIncrementerRuntimeError(effect.getTargetId());
             }
             double change = effect.getValue() * multiplier;
-            if (DLOG) Log.d(TAG, "> applying effect " + effect.getTargetId() + " " + -change);
+            if (DLOG) Log.d(TAG, "> applying cost effect " + effect.getTargetId() + " " + change);
             inc.applyChange(effect.getFunction(), change);
         }
         for (Effect effect : purchaseData.getEffect()) {
