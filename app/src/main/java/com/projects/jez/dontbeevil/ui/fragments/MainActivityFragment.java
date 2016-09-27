@@ -56,7 +56,6 @@ public class MainActivityFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
         View view = getView();
         View playButton = view.findViewById(R.id.play_button);
         playButton.setOnClickListener(new View.OnClickListener() {
@@ -74,7 +73,7 @@ public class MainActivityFragment extends Fragment {
     private static void bindReadouts(View view, GameManager gameManager) {
         GameState gameState = gameManager.getGameState();
         ObservableList<Incrementer> readouts = gameState.getReadouts().sort(new IncrementerComparator());
-        final rx.Observable<Long> refreshObs = rx.Observable.interval(300, TimeUnit.MILLISECONDS);
+        final rx.Observable<Long> refreshObs = rx.Observable.interval(15, TimeUnit.MILLISECONDS);
 
         LayoutRowAdapter<Incrementer> readoutAdapter = new LayoutRowAdapter<>(view.getContext(), readouts, R.layout.value_readout, new ViewDataBinder<Incrementer>() {
             @Override
