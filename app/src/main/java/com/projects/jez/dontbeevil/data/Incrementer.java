@@ -5,20 +5,17 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.projects.jez.dontbeevil.content.IncrementerScript;
+import com.projects.jez.dontbeevil.engine.ILoopingTask;
 import com.projects.jez.dontbeevil.engine.LoopTaskManager;
-import com.projects.jez.dontbeevil.engine.LoopingTask;
 import com.projects.jez.dontbeevil.engine.Range;
 import com.projects.jez.dontbeevil.errors.UnknownIncrementerRuntimeError;
 import com.projects.jez.dontbeevil.managers.IncrementerManager;
-import com.projects.jez.utils.Box;
 import com.projects.jez.utils.MapperUtils;
 import com.projects.jez.utils.Reducer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import rx.functions.Func1;
-import rx.subjects.BehaviorSubject;
+import java.util.List;
 
 /**
  * Created by Jez on 18/03/2016.
@@ -28,15 +25,17 @@ public class Incrementer {
     private static final boolean DLOG = true;
 
     private final String id;
-    private final BehaviorSubject<Double> rxValue = BehaviorSubject.create(0.0);
     private final IncrementerMetadata metadata;
     private final LoopTaskManager taskManager;
     private final PurchaseData purchaseData;
     private final LoopData loopData;
     private final IncrementerManager incrementerManager;
-    private final rx.Observable<Box<LoopingTask>> loopTask;
     private final HashMap<String, Double> multipliers = new HashMap<>();
+    private final List<IIncrementerListener> listeners = new ArrayList<>();
+    private final Runnable loopTaskRunnable;
     private double currentMultiplier;
+    private double value = 0.0;
+    private ILoopingTask loopTask;
 
     public enum Function {
         ADD("+"),
@@ -70,38 +69,24 @@ public class Incrementer {
 
         if (loopData != null) {
             if (DLOG) Log.d(TAG, id + " has loop data");
-            // only really want to evaluate when we have the first value sent through
-            loopTask = getValue().filter(new Func1<Double, Boolean>() {
+            loopTaskRunnable = new Runnable() {
                 @Override
-                public Boolean call(Double aDouble) {
-                    if (DLOG) Log.d(TAG, id + " take first filter: " + aDouble + " passes? " + (aDouble > 0));
-                    return aDouble > 0;
-                }
-            }).first().map(new Func1<Double, Box<LoopingTask>>() {
-                @Override
-                public Box<LoopingTask> call(Double arg) {
-                    if (DLOG) Log.d(TAG, id + " loopTask populating");
-                    return new Box<>(taskManager.startLoopingTask(id, loopData.getChargeTime(), new Runnable() {
-                        @Override
-                        public void run() {
-                            double count = rxValue.getValue();
-                            for (Effect effect : loopData.getEffects()) {
-                                String targetId = effect.getTargetId();
-                                Incrementer inc = incrementerManager.getIncrementer(targetId);
-                                if (inc == null) {
-                                    throw new UnknownIncrementerRuntimeError(targetId);
-                                }
-                                double change = effect.getValue() * count * currentMultiplier;
-                                inc.applyChange(id, effect.getFunction(), change);
-                            }
-
+                public void run() {
+                    double count = value;
+                    for (Effect effect : loopData.getEffects()) {
+                        String targetId = effect.getTargetId();
+                        Incrementer inc = incrementerManager.getIncrementer(targetId);
+                        if (inc == null) {
+                            throw new UnknownIncrementerRuntimeError(targetId);
                         }
-                    }));
+                        double change = effect.getValue() * count * currentMultiplier;
+                        inc.applyChange(id, effect.getFunction(), change);
+                    }
                 }
-            }).defaultIfEmpty(new Box<LoopingTask>(null));
+            };
 
         } else {
-            loopTask = null;
+            loopTaskRunnable = null;
         }
     }
 
@@ -109,13 +94,23 @@ public class Incrementer {
         if (DLOG) Log.d(TAG, id + " applyChange() - simple " + function + " " + change);
         switch(function) {
             case ADD:
-                rxValue.onNext(rxValue.getValue() + change);
+                value += change;
                 break;
             case SUB:
-                rxValue.onNext(rxValue.getValue() - change);
+                value -= change;
                 break;
             default:
                 Log.e(TAG, "unsupported operation when lacking id: " + function);
+        }
+        if (loopTask != null && value <= 0) {
+            taskManager.stopLoopingTask(id);
+            loopTask = null;
+        }
+        if (loopData != null && loopTask == null && value > 0) {
+            loopTask = taskManager.startLoopingTask(id, loopData.getChargeTime(), loopTaskRunnable);
+        }
+        for (IIncrementerListener listener : listeners) {
+            listener.onValueUpdate(value);
         }
     }
 
@@ -150,27 +145,25 @@ public class Incrementer {
         });
     }
 
-    @Nullable
-    public rx.Observable<Box<Range>> getRangeObservable() {
-        if (loopTask == null) return null;
-        return loopTask.flatMap(new Func1<Box<LoopingTask>, rx.Observable<Box<Range>>>() {
-            @Override
-            public rx.Observable<Box<Range>> call(Box<LoopingTask> arg) {
-                return arg.valueNotNull() ? arg.getValue().getRangeObservable() : rx.Observable.<Box<Range>>empty().defaultIfEmpty(new Box<Range>(null));
-            }
-        });
+    public @Nullable Range getRange() {
+        if (loopData == null) {
+            // this incrementer won't have a progressbar
+            return null;
+        }
+        if (loopTask == null) {
+            // at this time, this progressbar isn't running
+            return Range.empty();
+        }
+        // active progressbar
+        return loopTask.getRange();
     }
 
     public String getId() {
         return id;
     }
 
-    public rx.Observable<Double> getValue() {
-        return rxValue.asObservable();
-    }
-
-    private Double getCurrentValue() {
-        return rxValue.getValue();
+    public void addListener(IIncrementerListener listener) {
+        listeners.add(listener);
     }
 
     public String getTitle() {
@@ -187,7 +180,8 @@ public class Incrementer {
 
     public void preformPurchaseActions() {
         if (DLOG) Log.d(TAG, id + " preformPurchaseActions()");
-        double factor = Math.pow(getCurrentValue() + 1, purchaseData.getLevelFactor());
+        // TODO: price check before executing purchase
+        double factor = Math.pow(value + 1, purchaseData.getLevelFactor());
         for (Effect effect : purchaseData.getBaseCosts()) {
             Incrementer inc = incrementerManager.getIncrementer(effect.getTargetId());
             if (inc == null) {
@@ -196,7 +190,7 @@ public class Incrementer {
             double change = effect.getValue() * factor;
             if (DLOG) Log.d(TAG, "> applying cost effect " + effect.getTargetId()
                     + " " + change + " (base " + effect.getValue()
-                    + " count " + getCurrentValue() + " factor " + factor + ")");
+                    + " count " + value + " factor " + factor + ")");
             inc.applyChange(effect.getFunction(), change);
         }
         for (Effect effect : purchaseData.getEffect()) {

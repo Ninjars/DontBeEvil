@@ -1,6 +1,8 @@
 package com.projects.jez.dontbeevil.ui.fragments;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,7 +13,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.projects.jez.dontbeevil.R;
+import com.projects.jez.dontbeevil.data.IIncrementerListener;
 import com.projects.jez.dontbeevil.data.Incrementer;
+import com.projects.jez.dontbeevil.engine.LoopTaskManager;
 import com.projects.jez.dontbeevil.engine.Range;
 import com.projects.jez.dontbeevil.managers.Environment;
 import com.projects.jez.dontbeevil.managers.GameManager;
@@ -20,14 +24,9 @@ import com.projects.jez.dontbeevil.ui.IncrementerComparator;
 import com.projects.jez.dontbeevil.ui.views.adapters.listadapters.ItemSelectionHandler;
 import com.projects.jez.dontbeevil.ui.views.adapters.listadapters.LayoutRowAdapter;
 import com.projects.jez.dontbeevil.ui.views.adapters.listadapters.ViewDataBinder;
-import com.projects.jez.utils.Box;
 import com.projects.jez.utils.observable.ObservableList.ObservableList;
 
-import java.util.concurrent.TimeUnit;
-
-import rx.Observer;
-import rx.functions.Func1;
-import rx.functions.Func2;
+import java.lang.ref.WeakReference;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -35,6 +34,7 @@ import rx.functions.Func2;
 public class MainActivityFragment extends Fragment {
     private static final String TAG = MainActivityFragment.class.getSimpleName();
     private static final boolean DLOG = true;
+    private Handler mHandler;
     private Environment mEnvironment;
 
     public MainActivityFragment() {
@@ -51,8 +51,6 @@ public class MainActivityFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
         mEnvironment = Environment.getInstance(getContext().getApplicationContext());
-        GameManager gameManager = mEnvironment.getGameManager();
-        bindReadouts(view, gameManager);
         return view;
     }
 
@@ -68,13 +66,23 @@ public class MainActivityFragment extends Fragment {
                 gameManager.getPlaysIncrementer().applyChange(Incrementer.Function.ADD, 1);
             }
         });
-
+        GameManager gameManager = mEnvironment.getGameManager();
+        mHandler = new Handler(Looper.getMainLooper());
+        bindReadouts(view, gameManager, mEnvironment.getTaskManager());
     }
 
-    private static void bindReadouts(View view, GameManager gameManager) {
+    @Override
+    public void onPause() {
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
+            mHandler = null;
+        }
+        super.onPause();
+    }
+
+    private static void bindReadouts(View view, GameManager gameManager, final LoopTaskManager taskManager) {
         GameState gameState = gameManager.getGameState();
         ObservableList<Incrementer> readouts = gameState.getReadouts().sort(new IncrementerComparator());
-        final rx.Observable<Long> refreshObs = rx.Observable.interval(15, TimeUnit.MILLISECONDS);
 
         LayoutRowAdapter<Incrementer> readoutAdapter = new LayoutRowAdapter<>(view.getContext(), readouts, R.layout.value_readout, new ViewDataBinder<Incrementer>() {
             @Override
@@ -82,58 +90,42 @@ public class MainActivityFragment extends Fragment {
                 TextView readoutTitle = (TextView) view.findViewById(R.id.readout_title);
                 readoutTitle.setText(data.getTitle());
                 final TextView readoutValue = (TextView) view.findViewById(R.id.readout_value);
-                rx.Observable<String> readoutValueText = data.getValue().map(new Func1<Double, String>() {
-                    @Override
-                    public String call(Double aDouble) {
-                        return String.valueOf(aDouble.intValue());
-                    }
-                });
-                readoutValueText.subscribe(new Observer<String>() {
-                    @Override
-                    public void onCompleted() {
-                        if (DLOG) Log.d(TAG, "readout.onCompleted");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e(TAG, "readout: " + e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(String s) {
-                        readoutValue.setText(s);
-                    }
-                });
-
                 final ProgressBar progressBar = (ProgressBar) view.findViewById(R.id.readout_progress);
-                rx.Observable<Box<Range>> rangeObs = data.getRangeObservable();
-                if (rangeObs == null) {
+
+                final WeakReference<TextView> weakTextView = new WeakReference<>(readoutValue);
+                final WeakReference<ProgressBar> weakProgressBar = new WeakReference<>(progressBar);
+
+                data.addListener(new IIncrementerListener() {
+
+                    @Override
+                    public void onValueUpdate(double value) {
+                        TextView strongTextView = weakTextView.get();
+                        if (strongTextView != null) {
+                            strongTextView.setText(String.valueOf((int) value));
+                        }
+                    }
+                });
+
+                Range range = data.getRange();
+                if (range == null) {
                     progressBar.setVisibility(View.GONE);
                 } else {
                     progressBar.setVisibility(View.VISIBLE);
-                    rx.Observable<Integer> progressObs = rx.Observable.combineLatest(refreshObs, rangeObs, new Func2<Long, Box<Range>, Integer>() {
+                    taskManager.startLoopingTask(getUpdateTaskKey(data.getId()), 15, new Runnable() {
                         @Override
-                        public Integer call(Long aLong, Box<Range> rangeBox) {
-                            Range range = rangeBox.getValue();
-                            if (range == null) return 0;
-                            double progression = range.getCappedProgression(System.currentTimeMillis());
-                            return (int) Math.floor(progression * progressBar.getMax());
-                        }
-                    });
-                    progressObs.subscribe(new Observer<Integer>() {
-                        @Override
-                        public void onCompleted() {
-                            if (DLOG) Log.d(TAG, "progressVisibilityObs.onCompleted");
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                            Log.e(TAG, "progressObs: " + e.getMessage());
-                        }
-
-                        @Override
-                        public void onNext(final Integer integer) {
-                            progressBar.setProgress(integer);
+                        public void run() {
+                            long currentTime = System.currentTimeMillis();
+                            ProgressBar strongProgressBar = weakProgressBar.get();
+                            if (strongProgressBar == null) {
+                                return;
+                            }
+                            Range range = data.getRange();
+                            if (range == null) {
+                                strongProgressBar.setProgress(0);
+                            }
+                            double progression = range.getCappedProgression(currentTime);
+                            int progressValue = (int) Math.floor(progression * strongProgressBar.getMax());
+                            strongProgressBar.setProgress(progressValue);
                         }
                     });
                 }
@@ -149,5 +141,9 @@ public class MainActivityFragment extends Fragment {
         ListView listView = (ListView) view.findViewById(R.id.readout_list);
         listView.setAdapter(readoutAdapter);
         listView.setOnItemClickListener(readoutAdapter);
+    }
+
+    private static String getUpdateTaskKey(String id) {
+        return id + "_updater";
     }
 }

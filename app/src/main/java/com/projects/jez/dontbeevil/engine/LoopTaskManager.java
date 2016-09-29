@@ -14,7 +14,7 @@ public class LoopTaskManager {
 
     private final HashMap<String, LoopTaskHandler> mTaskHandlers = new HashMap<>();
 
-    public LoopingTask startLoopingTask(String id, long period, Runnable task) {
+    public ILoopingTask startLoopingTask(String id, long period, Runnable task) {
         if (mTaskHandlers.containsKey(id)) {
             throw new DuplicateLoopTaskRuntimeError(id);
         }
@@ -41,6 +41,18 @@ public class LoopTaskManager {
     public void resumeAll() {
         for (LoopTaskHandler handler : mTaskHandlers.values()) {
             handler.resume();
+        }
+    }
+
+    public boolean has(String id) {
+        return mTaskHandlers.containsKey(id);
+    }
+
+    public void stopLoopingTask(String id) {
+        LoopTaskHandler handler = mTaskHandlers.get(id);
+        if (handler != null) {
+            handler.stop();
+            mTaskHandlers.remove(id);
         }
     }
 }

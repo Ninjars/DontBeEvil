@@ -8,17 +8,20 @@ import com.projects.jez.dontbeevil.BuildConfig;
  * Can be queried to provide a progression.
  */
 public class Range {
-
-    private final long mStart;
-    private final long mRange;
-
-    public Range(long start, long range) {
-        mStart = start;
-        mRange = range;
-        if (BuildConfig.DEBUG && mRange <= 0) throw new RuntimeException("cannot have negative range: value was " + range);
-    }
+    private long mStart;
+    private long mRange;
 
     public double getCappedProgression(long currentValue) {
         return Math.max(0, Math.min(1.0, (currentValue - mStart) / (float) mRange));
+    }
+
+    void update(long start, long range) {
+        if (BuildConfig.DEBUG && range <= 0.0) throw new RuntimeException("cannot have negative range: value was " + range);
+        mStart = start;
+        mRange = range;
+    }
+
+    public static Range empty() {
+        return EmptyRange.getInstance();
     }
 }

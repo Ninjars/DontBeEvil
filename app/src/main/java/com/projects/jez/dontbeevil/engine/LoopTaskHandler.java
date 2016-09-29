@@ -3,24 +3,19 @@ package com.projects.jez.dontbeevil.engine;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.projects.jez.utils.Box;
-
-import rx.Observable;
-import rx.subjects.BehaviorSubject;
-
 /**
  * Created by jez on 22/03/2016.
  */
-public class LoopTaskHandler implements LoopingTask {
+class LoopTaskHandler implements ILoopingTask {
 
     private final Handler cLoopHandler = new Handler(Looper.getMainLooper());
-    private final BehaviorSubject<Box<Range>> mRange = BehaviorSubject.create(new Box<Range>(null));
     private final Runnable mTask;
+    private Range mRange;
     private Long lastUpdateStarted;
     private Long lastUpdateStopped;
     private long mLoopPeriod;
 
-    public LoopTaskHandler(final Runnable task, long loopTime) {
+    LoopTaskHandler(final Runnable task, long loopTime) {
         mTask = new Runnable() {
             @Override
             public void run() {
@@ -31,8 +26,9 @@ public class LoopTaskHandler implements LoopingTask {
         mLoopPeriod = loopTime;
     }
 
-    public void start() {
+    void start() {
         lastUpdateStopped = null;
+        mRange = new Range();
         cLoopHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -43,18 +39,18 @@ public class LoopTaskHandler implements LoopingTask {
 
     private void update() {
         lastUpdateStarted = System.currentTimeMillis();
-        mRange.onNext(new Box<>(new Range(lastUpdateStarted, mLoopPeriod)));
+        mRange.update(lastUpdateStarted, mLoopPeriod);
         cLoopHandler.postDelayed(mTask, mLoopPeriod);
     }
 
-    public void stop() {
+    void stop() {
         lastUpdateStopped = System.currentTimeMillis();
-        mRange.onNext(new Box<Range>(null));
+        mRange = null;
         cLoopHandler.removeCallbacksAndMessages(null);
     }
 
-    public void resume() {
-        if (lastUpdateStopped != null) {
+    void resume() {
+        if (lastUpdateStopped == null) {
             // does not appear to have been stopped, ignore resume
             //noinspection UnnecessaryReturnStatement
             return;
@@ -65,20 +61,23 @@ public class LoopTaskHandler implements LoopingTask {
 
         } else {
             // resuming accounting for previous progress
-            lastUpdateStopped = null;
             long delta = Math.min(Math.max(0, mLoopPeriod - (lastUpdateStopped - lastUpdateStarted)), mLoopPeriod);
-            mRange.onNext(new Box<>(new Range(System.currentTimeMillis() - (mLoopPeriod - delta), mLoopPeriod)));
+            lastUpdateStopped = null;
+            mRange = new Range();
+            mRange.update(System.currentTimeMillis() - (mLoopPeriod - delta), mLoopPeriod);
             cLoopHandler.postDelayed(mTask, delta);
         }
     }
 
+    @Override
     public void setPeriod(long period) {
         mLoopPeriod = period;
         stop();
         resume();
     }
 
-    public Observable<Box<Range>> getRangeObservable() {
-        return mRange.asObservable();
+    @Override
+    public Range getRange() {
+        return mRange;
     }
 }
