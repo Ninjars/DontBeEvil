@@ -25,6 +25,31 @@
 		}
 	},
 	{
+		"id": "social",
+		"metadata": {
+			"title": "Social",
+			"caption": "Spread the word!",
+			"sort_order": 5
+		},
+		"purchase_data": {
+			"level_multiplier": 1.1,
+			"base_cost": [
+				{
+					"target_id": "plays",
+					"value": 3,
+					"type": "-"	
+				}
+			],
+			"effects": [
+				{
+					"target_id": "social",
+					"value": 1,
+					"type": "+"
+				}
+			]
+		}
+	},
+	{
 		"id": "players",
 		"metadata": {
 			"title": "Player",
@@ -35,8 +60,8 @@
 			"level_multiplier": 1.1,
 			"base_cost": [
 				{
-					"target_id": "plays",
-					"value": 1,
+					"target_id": "social",
+					"value": 5,
 					"type": "-"
 				}
 			],
