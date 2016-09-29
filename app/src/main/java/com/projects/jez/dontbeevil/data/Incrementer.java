@@ -187,14 +187,16 @@ public class Incrementer {
 
     public void preformPurchaseActions() {
         if (DLOG) Log.d(TAG, id + " preformPurchaseActions()");
-        double factor = Math.pow(getCurrentValue(), purchaseData.getLevelFactor());
+        double factor = Math.pow(getCurrentValue() + 1, purchaseData.getLevelFactor());
         for (Effect effect : purchaseData.getBaseCosts()) {
             Incrementer inc = incrementerManager.getIncrementer(effect.getTargetId());
             if (inc == null) {
                 throw new UnknownIncrementerRuntimeError(effect.getTargetId());
             }
             double change = effect.getValue() * factor;
-            if (DLOG) Log.d(TAG, "> applying cost effect " + effect.getTargetId() + " " + change);
+            if (DLOG) Log.d(TAG, "> applying cost effect " + effect.getTargetId()
+                    + " " + change + " (base " + effect.getValue()
+                    + " count " + getCurrentValue() + " factor " + factor + ")");
             inc.applyChange(effect.getFunction(), change);
         }
         for (Effect effect : purchaseData.getEffect()) {
