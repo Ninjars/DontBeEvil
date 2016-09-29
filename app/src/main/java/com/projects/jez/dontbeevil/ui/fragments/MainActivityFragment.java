@@ -38,19 +38,22 @@ public class MainActivityFragment extends Fragment {
     private Environment mEnvironment;
 
     public MainActivityFragment() {
-
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        mEnvironment = Environment.getInstance(getContext().getApplicationContext());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_main, container, false);
+        View view = inflater.inflate(R.layout.fragment_main, container, false);
+
+        mEnvironment = Environment.getInstance(getContext().getApplicationContext());
+        GameManager gameManager = mEnvironment.getGameManager();
+        bindReadouts(view, gameManager);
+        return view;
     }
 
     @Override
@@ -66,8 +69,6 @@ public class MainActivityFragment extends Fragment {
             }
         });
 
-        GameManager gameManager = mEnvironment.getGameManager();
-        bindReadouts(view, gameManager);
     }
 
     private static void bindReadouts(View view, GameManager gameManager) {
