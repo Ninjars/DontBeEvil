@@ -19,13 +19,13 @@ public class PurchaseData {
         List<Effect> costs = MapperUtils.map(data.getBaseCost(), new Mapper<EffectScript, Effect>() {
             @Override
             public Effect map(EffectScript arg) {
-                return new Effect(arg);
+                return Effect.create(arg);
             }
         });
         List<Effect> effects = MapperUtils.map(data.getEffects(), new Mapper<EffectScript, Effect>() {
             @Override
             public Effect map(EffectScript arg) {
-                return new Effect(arg);
+                return Effect.create(arg);
             }
         });
         return create(costs, effects, data.getLevelFactor());

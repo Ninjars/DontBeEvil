@@ -19,7 +19,7 @@ public class LoopData {
         effects = MapperUtils.map(data.getEffects(), new Mapper<EffectScript, Effect>() {
             @Override
             public Effect map(EffectScript arg) {
-                return new Effect(arg);
+                return Effect.create(arg);
             }
         });
     }

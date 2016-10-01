@@ -1,5 +1,7 @@
 package com.projects.jez.dontbeevil.data;
 
+import android.support.annotation.Nullable;
+
 import com.projects.jez.dontbeevil.content.EffectScript;
 
 /**
@@ -9,11 +11,19 @@ public class Effect {
     private final String targetId;
     private final double value;
     private final Incrementer.Function function;
+    public static Effect create(EffectScript effect) {
+        return Effect.create(effect.getTargetId(), effect.getValue(),
+                Incrementer.Function.getFunctionFromKey(effect.getFunction()));
+    }
 
-    public Effect(EffectScript effect) {
-        targetId = effect.getTargetId();
-        value = effect.getValue();
-        function = effect.getFunction() == null ? Incrementer.Function.ADD : Incrementer.Function.getFunctionFromKey(effect.getFunction());
+    public static Effect create(String targetId, double value, @Nullable Incrementer.Function function) {
+        return new Effect(targetId, value, function);
+    }
+
+    private Effect(String targetId, double value, @Nullable Incrementer.Function function) {
+        this.targetId = targetId;
+        this.value = value;
+        this.function = function == null ? Incrementer.Function.ADD : function;
     }
 
     public String getTargetId() {
@@ -32,4 +42,5 @@ public class Effect {
     public Incrementer.Function getFunction() {
         return function;
     }
+
 }

@@ -47,7 +47,10 @@ public class Incrementer {
         Function(String key) {
             this.key = key;
         }
-        public static Function getFunctionFromKey(String key) {
+        public static Function getFunctionFromKey(@Nullable String key) {
+            if (key == null) {
+                return null;
+            }
             for (Function v : values()) {
                 if (v.key.equals(key)) {
                     return v;
