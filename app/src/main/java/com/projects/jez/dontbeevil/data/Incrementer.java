@@ -64,7 +64,7 @@ public class Incrementer {
                                      @Nullable LoopTaskManager taskMngr) {
         IncrementerMetadata meta = IncrementerMetadata.create(arg.getMetadata());
         PurchaseData purchase = PurchaseData.create(arg.getPurchaseData());
-        LoopData loop = arg.getLoopData() == null ? null : new LoopData(arg.getLoopData());
+        LoopData loop = LoopData.create(arg.getLoopData());
         String id = arg.getId();
 
         return create(id, meta, purchase, loop, incManager, taskMngr);
