@@ -25,10 +25,10 @@
 		}
 	},
 	{
-		"id": "social",
+		"id": "shares",
 		"metadata": {
-			"title": "Social",
-			"caption": "Spread the word!",
+			"title": "Shares",
+			"caption": "Post it on the interwebs",
 			"sort_order": 5
 		},
 		"purchase_data": {
@@ -42,7 +42,7 @@
 			],
 			"effects": [
 				{
-					"target_id": "social",
+					"target_id": "shares",
 					"value": 1,
 					"type": "+"
 				}
@@ -60,7 +60,7 @@
 			"level_multiplier": 1.1,
 			"base_cost": [
 				{
-					"target_id": "social",
+					"target_id": "shares",
 					"value": 5,
 					"type": "-"
 				}
