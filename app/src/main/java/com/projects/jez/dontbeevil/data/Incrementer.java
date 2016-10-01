@@ -90,6 +90,14 @@ public class Incrementer {
         }
     }
 
+    /**
+     * Apply a change to this incrementer; the value will be used as-is, no multipliers will be applied
+     * This method only accepts addition and subtraction functions; multiplication and division
+     * should also supply an id
+     *
+     * @param function how the change should be applied, ie addition, subtraction
+     * @param change the value of the change.
+     */
     public void applyChange(Function function, double change) {
         if (DLOG) Log.d(TAG, id + " applyChange() - simple " + function + " " + change);
         switch(function) {
@@ -100,7 +108,8 @@ public class Incrementer {
                 value -= change;
                 break;
             default:
-                Log.e(TAG, "unsupported operation when lacking id: " + function);
+                throw new IllegalStateException("unsupported operation applied to " + id
+                        + " with function: " + function);
         }
         if (loopTask != null && value <= 0) {
             taskManager.stopLoopingTask(id);
@@ -114,6 +123,12 @@ public class Incrementer {
         }
     }
 
+    /**
+     * Apply a change to this incrementer; the value will be used as-is, no multipliers will be applied
+     *
+     * @param function how the change should be applied, ie addition, multiplication
+     * @param change the value of the change.
+     */
     public void applyChange(@NonNull String applierId, Function function, double change) {
         if (DLOG) Log.d(TAG, id + " applyChange() " + function + " " + change);
         switch(function) {
