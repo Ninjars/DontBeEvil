@@ -13,22 +13,32 @@ import java.util.List;
 public class PurchaseData {
     private final double levelFactor;
     private final List<Effect> baseCosts;
-    private final List<Effect> effect;
+    private final List<Effect> effects;
 
-    public PurchaseData(PurchaseDataScript data) {
-        baseCosts = MapperUtils.map(data.getBaseCost(), new Mapper<EffectScript, Effect>() {
+    public static PurchaseData create(PurchaseDataScript data) {
+        List<Effect> costs = MapperUtils.map(data.getBaseCost(), new Mapper<EffectScript, Effect>() {
             @Override
             public Effect map(EffectScript arg) {
                 return new Effect(arg);
             }
         });
-        effect = MapperUtils.map(data.getEffects(), new Mapper<EffectScript, Effect>() {
+        List<Effect> effects = MapperUtils.map(data.getEffects(), new Mapper<EffectScript, Effect>() {
             @Override
             public Effect map(EffectScript arg) {
                 return new Effect(arg);
             }
         });
-        levelFactor = data.getLevelFactor();
+        return create(costs, effects, data.getLevelFactor());
+    }
+
+    public static PurchaseData create (List<Effect> baseCosts, List<Effect> effects, double levelFactor) {
+        return new PurchaseData(baseCosts, effects, levelFactor);
+    }
+
+    private PurchaseData(List<Effect> baseCosts, List<Effect> effects, double levelFactor) {
+        this.baseCosts = baseCosts;
+        this.effects = effects;
+        this.levelFactor = levelFactor;
     }
 
     public List<Effect> getBaseCosts() {
@@ -39,7 +49,7 @@ public class PurchaseData {
         return levelFactor;
     }
 
-    public List<Effect> getEffect() {
-        return effect;
+    public List<Effect> getEffects() {
+        return effects;
     }
 }

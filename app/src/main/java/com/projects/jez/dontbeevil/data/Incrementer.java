@@ -24,12 +24,12 @@ public class Incrementer {
     private static final String TAG = Incrementer.class.getSimpleName();
     private static final boolean DLOG = true;
 
-    private final String id;
-    private final IncrementerMetadata metadata;
-    private final LoopTaskManager taskManager;
-    private final PurchaseData purchaseData;
-    private final LoopData loopData;
-    private final IncrementerManager incrementerManager;
+    private final @NonNull String id;
+    private final @NonNull IncrementerMetadata metadata;
+    private final @Nullable LoopTaskManager taskManager;
+    private final @NonNull PurchaseData purchaseData;
+    private final @Nullable LoopData loopData;
+    private final @NonNull IncrementerManager incrementerManager;
     private final HashMap<String, Double> multipliers = new HashMap<>();
     private final List<IIncrementerListener> listeners = new ArrayList<>();
     private final Runnable loopTaskRunnable;
@@ -57,15 +57,33 @@ public class Incrementer {
         }
     }
 
-    public Incrementer(IncrementerScript arg, IncrementerManager incManager, LoopTaskManager taskMngr) {
-        if (DLOG) Log.d(TAG, "init() " + arg.getId());
+    public static Incrementer create(@NonNull IncrementerScript arg, @NonNull IncrementerManager incManager,
+                                     @Nullable LoopTaskManager taskMngr) {
+        IncrementerMetadata meta = IncrementerMetadata.create(arg.getMetadata());
+        PurchaseData purchase = PurchaseData.create(arg.getPurchaseData());
+        LoopData loop = arg.getLoopData() == null ? null : new LoopData(arg.getLoopData());
+        String id = arg.getId();
+
+        return create(id, meta, purchase, loop, incManager, taskMngr);
+    }
+
+    public static Incrementer create(@NonNull String id, @NonNull IncrementerMetadata metadata,
+                                     @NonNull PurchaseData purchaseData, @Nullable LoopData loopData,
+                                     @NonNull IncrementerManager incManager, @Nullable LoopTaskManager taskMngr) {
+        return new Incrementer(id, metadata, purchaseData, loopData, incManager, taskMngr);
+    }
+
+    private Incrementer(@NonNull String id, @NonNull IncrementerMetadata meta,
+                        @NonNull PurchaseData purchase, @Nullable LoopData loop,
+                        @NonNull IncrementerManager incManager, @Nullable LoopTaskManager taskMngr) {
+        if (DLOG) Log.d(TAG, "init: " + id);
+        this.id = id;
         this.taskManager = taskMngr;
         this.incrementerManager = incManager;
         currentMultiplier = calculateCurrentMultiplier();
-        id = arg.getId();
-        metadata = new IncrementerMetadata(arg.getMetadata());
-        purchaseData = new PurchaseData(arg.getPurchaseData());
-        loopData = arg.getLoopData() == null ? null : new LoopData(arg.getLoopData());
+        metadata = meta;
+        purchaseData = purchase;
+        loopData = loop;
 
         if (loopData != null) {
             if (DLOG) Log.d(TAG, id + " has loop data");
@@ -80,7 +98,7 @@ public class Incrementer {
                             throw new UnknownIncrementerRuntimeError(targetId);
                         }
                         double change = effect.getValue() * count * currentMultiplier;
-                        inc.applyChange(id, effect.getFunction(), change);
+                        inc.applyChange(Incrementer.this.id, effect.getFunction(), change);
                     }
                 }
             };
@@ -111,11 +129,11 @@ public class Incrementer {
                 throw new IllegalStateException("unsupported operation applied to " + id
                         + " with function: " + function);
         }
-        if (loopTask != null && value <= 0) {
+        if (loopTask != null && value <= 0 && taskManager != null) {
             taskManager.stopLoopingTask(id);
             loopTask = null;
         }
-        if (loopData != null && loopTask == null && value > 0) {
+        if (loopData != null && loopTask == null && value > 0 && taskManager != null) {
             loopTask = taskManager.startLoopingTask(id, loopData.getChargeTime(), loopTaskRunnable);
         }
         for (IIncrementerListener listener : listeners) {
@@ -173,6 +191,7 @@ public class Incrementer {
         return loopTask.getRange();
     }
 
+    @NonNull
     public String getId() {
         return id;
     }
@@ -208,7 +227,7 @@ public class Incrementer {
                     + " count " + value + " factor " + factor + ")");
             inc.applyChange(effect.getFunction(), change);
         }
-        for (Effect effect : purchaseData.getEffect()) {
+        for (Effect effect : purchaseData.getEffects()) {
             String targetId = effect.getTargetId();
             Incrementer inc = incrementerManager.getIncrementer(targetId);
             if (inc == null) {

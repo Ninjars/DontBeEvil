@@ -11,10 +11,18 @@ public class IncrementerMetadata {
     private final String caption;
     private final int sortOrder;
 
-    public IncrementerMetadata(IncrementerMetadataScript metadata) {
-        title = metadata.getTitle();
-        caption = metadata.getCaption();
-        sortOrder = metadata.getSortOrder();
+    public static IncrementerMetadata create(IncrementerMetadataScript metadata) {
+        return IncrementerMetadata.create(metadata.getTitle(), metadata.getCaption(), metadata.getSortOrder());
+    }
+
+    public static IncrementerMetadata create(String title, String caption, Integer sortOrder) {
+        return new IncrementerMetadata(title, caption, sortOrder);
+    }
+
+    private IncrementerMetadata(String title, String caption, Integer sortOrder) {
+        this.title = title;
+        this.caption = caption;
+        this.sortOrder = sortOrder;
     }
 
     public String getTitle() {

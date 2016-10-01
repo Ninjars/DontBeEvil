@@ -43,7 +43,7 @@ public final class Environment {
             @Override
             public Incrementer map(IncrementerScript arg) {
                 if (DLOG) Log.d(TAG, "creating incrementer with id " + arg.getId());
-                return new Incrementer(arg, incrementerManager, taskManager);
+                return Incrementer.create(arg, incrementerManager, taskManager);
             }
         });
         incrementerManager.addAll(incrementers);
