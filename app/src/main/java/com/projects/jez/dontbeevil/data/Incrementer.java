@@ -37,6 +37,10 @@ public class Incrementer {
     private double value = 0.0;
     private ILoopingTask loopTask;
 
+    public double getValue() {
+        return value;
+    }
+
     public enum Function {
         ADD("+"),
         SUB("-"),
