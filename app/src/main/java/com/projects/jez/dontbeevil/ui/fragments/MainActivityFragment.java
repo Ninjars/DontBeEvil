@@ -63,7 +63,8 @@ public class MainActivityFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 GameManager gameManager = mEnvironment.getGameManager();
-                gameManager.getPlaysIncrementer().applyChange(Incrementer.Function.ADD, 1);
+                boolean appliedChange = gameManager.getPlaysIncrementer().modifyValue(1);
+                // TODO: perform action if change didn't apply
             }
         });
         GameManager gameManager = mEnvironment.getGameManager();

@@ -16,6 +16,7 @@ import com.projects.jez.utils.Reducer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Jez on 18/03/2016.
@@ -23,6 +24,7 @@ import java.util.List;
 public class Incrementer {
     private static final String TAG = Incrementer.class.getSimpleName();
     private static final boolean DLOG = true;
+    private static final boolean DEBUG_ALLOW_INVALID_PURCHASE_ACTIONS = false;
 
     private final @NonNull String id;
     private final @NonNull IncrementerMetadata metadata;
@@ -32,6 +34,8 @@ public class Incrementer {
     private final @NonNull IncrementerManager incrementerManager;
     private final HashMap<String, Double> multipliers = new HashMap<>();
     private final List<IIncrementerListener> listeners = new ArrayList<>();
+    // effectsToApply map created here to avoid object allocation on every purchase call
+    private final HashMap<Incrementer, Double> effectsToApply = new HashMap<>();
     private final Runnable loopTaskRunnable;
     private double currentMultiplier;
     private double value = 0.0;
@@ -115,27 +119,38 @@ public class Incrementer {
         }
     }
 
+    public boolean canApplyChange(Function function, double change) {
+        switch(function) {
+            case ADD:
+                // no action
+                break;
+            case SUB:
+                change = -change;
+                break;
+            default:
+                return true;
+        }
+        return canApplyChange(change);
+    }
+
+    public boolean canApplyChange(double change) {
+        //noinspection SimplifiableConditionalExpression
+        return DEBUG_ALLOW_INVALID_PURCHASE_ACTIONS ? true : value + change >= 0;
+    }
+
     /**
      * Apply a change to this incrementer; the value will be used as-is, no multipliers will be applied
      * This method only accepts addition and subtraction functions; multiplication and division
      * should also supply an id
      *
-     * @param function how the change should be applied, ie addition, subtraction
      * @param change the value of the change.
      */
-    public void applyChange(Function function, double change) {
-        if (DLOG) Log.d(TAG, id + " applyChange() - simple " + function + " " + change);
-        switch(function) {
-            case ADD:
-                value += change;
-                break;
-            case SUB:
-                value -= change;
-                break;
-            default:
-                throw new IllegalStateException("unsupported operation applied to " + id
-                        + " with function: " + function);
+    public boolean modifyValue(double change) {
+        if (DLOG) Log.d(TAG, id + " modifyValue() " + change);
+        if (!canApplyChange(change)) {
+            return false;
         }
+        value += change;
         if (loopTask != null && value <= 0 && taskManager != null) {
             taskManager.stopLoopingTask(id);
             loopTask = null;
@@ -146,6 +161,7 @@ public class Incrementer {
         for (IIncrementerListener listener : listeners) {
             listener.onValueUpdate(value);
         }
+        return true;
     }
 
     /**
@@ -158,8 +174,10 @@ public class Incrementer {
         if (DLOG) Log.d(TAG, id + " applyChange() " + function + " " + change);
         switch(function) {
             case ADD:
+                modifyValue(change);
+                break;
             case SUB:
-                applyChange(function, change);
+                modifyValue(-change);
                 break;
             case MULT:
                 applyMultiplier(applierId, change);
@@ -219,21 +237,53 @@ public class Incrementer {
         return metadata.getSortOrder();
     }
 
-    public void preformPurchaseActions() {
+    /**
+     * Exposed for tests
+     *
+     * @return current factor to apply to base purchase costs
+     */
+    double getPurchaseFactor() {
+        return Math.pow(value + 1, purchaseData.getLevelFactor());
+    }
+
+    public boolean preformPurchaseActions() {
         if (DLOG) Log.d(TAG, id + " preformPurchaseActions()");
-        // TODO: price check before executing purchase
-        double factor = Math.pow(value + 1, purchaseData.getLevelFactor());
+        double factor = getPurchaseFactor();
+        effectsToApply.clear();
         for (Effect effect : purchaseData.getBaseCosts()) {
+            // TODO: check for duplicate targetIds in effects
             Incrementer inc = incrementerManager.getIncrementer(effect.getTargetId());
             if (inc == null) {
                 throw new UnknownIncrementerRuntimeError(effect.getTargetId());
             }
-            double change = effect.getValue() * factor;
-            if (DLOG) Log.d(TAG, "> applying cost effect " + effect.getTargetId()
-                    + " " + change + " (base " + effect.getValue()
-                    + " count " + value + " factor " + factor + ")");
-            inc.applyChange(effect.getFunction(), change);
+            double effectValue = 0.0;
+            switch (effect.getFunction()) {
+                case ADD:
+                    effectValue = effect.getValue() * factor;
+                    break;
+                case SUB:
+                    effectValue = -effect.getValue() * factor;
+                    break;
+                default:
+                    // ignore divide and multiplier for cost effects value
+                    if (DLOG)
+                        Log.d(TAG, "> ignoring effect function " + effect.getFunction() + " " + effect.getTargetId());
+            }
+            boolean canApply = inc.canApplyChange(effectValue);
+            if (!canApply) {
+                if (DLOG) Log.d(TAG, "> unable to make purchase");
+                return false;
+            }
+            effectsToApply.put(inc, effectValue);
         }
+
+        for (Map.Entry<Incrementer, Double> entry : effectsToApply.entrySet()) {
+            boolean changeApplied = entry.getKey().modifyValue(entry.getValue());
+            if (!changeApplied) {
+                throw new IllegalStateException("Attempted to apply change failed: " + entry.getValue() + " targeting " + entry.getKey().getId() + " with current value " + entry.getKey().getValue());
+            }
+        }
+
         for (Effect effect : purchaseData.getEffects()) {
             String targetId = effect.getTargetId();
             Incrementer inc = incrementerManager.getIncrementer(targetId);
@@ -244,5 +294,6 @@ public class Incrementer {
             if (DLOG) Log.d(TAG, "> applying effect " + effect.getTargetId() + " " + change);
             inc.applyChange(id, effect.getFunction(), change);
         }
+        return true;
     }
 }
