@@ -8,13 +8,11 @@
 		},
 		"purchase_data": {
 			"level_multiplier": 1.0,
-			"base_cost": [
-				{
-					"target_id": "plays",
-					"value": 0,
-					"type": "-"
-				}
-			],
+			"base_cost": {
+				"target_id": "plays",
+				"value": 0,
+				"type": "-"
+			},
 			"effects": [
 				{
 					"target_id": "plays",
@@ -33,13 +31,11 @@
 		},
 		"purchase_data": {
 			"level_multiplier": 1.1,
-			"base_cost": [
-				{
-					"target_id": "plays",
-					"value": 3,
-					"type": "-"	
-				}
-			],
+			"base_cost": {
+				"target_id": "plays",
+				"value": 3,
+				"type": "-"
+			},
 			"effects": [
 				{
 					"target_id": "shares",
@@ -58,13 +54,11 @@
 		},
 		"purchase_data": {
 			"level_multiplier": 1.1,
-			"base_cost": [
-				{
-					"target_id": "shares",
-					"value": 5,
-					"type": "-"
-				}
-			],
+			"base_cost": {
+				"target_id": "shares",
+				"value": 5,
+				"type": "-"
+			},
 			"effects": [
 				{
 					"target_id": "players",

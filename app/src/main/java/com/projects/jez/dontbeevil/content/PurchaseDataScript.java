@@ -12,14 +12,14 @@ import java.util.List;
  */
 public class PurchaseDataScript {
     @SerializedName("base_cost")
-    List<EffectScript> baseCost;
+    EffectScript baseCost;
     @SerializedName("level_multiplier")
     double levelFactor = 1.0;
     List<EffectScript> effects;
 
     @NonNull
-    public List<EffectScript> getBaseCost() {
-        return baseCost == null ? new ArrayList<EffectScript>() : baseCost;
+    public EffectScript getBaseCost() {
+        return baseCost == null ? null : baseCost;
     }
 
     public double getLevelFactor() {

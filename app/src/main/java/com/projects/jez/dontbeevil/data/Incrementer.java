@@ -16,7 +16,6 @@ import com.projects.jez.utils.Reducer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Jez on 18/03/2016.
@@ -32,8 +31,6 @@ public class Incrementer {
     private final @NonNull IncrementerManager incrementerManager;
     private final HashMap<String, Double> multipliers = new HashMap<>();
     private final List<IIncrementerListener> listeners = new ArrayList<>();
-    // effectsToApply map created here to avoid object allocation on every purchase call
-    private final HashMap<Incrementer, Double> effectsToApply = new HashMap<>();
     private final Runnable loopTaskRunnable;
     private double currentMultiplier;
     private double value = 0.0;
@@ -247,37 +244,32 @@ public class Incrementer {
     public boolean preformPurchaseActions() {
         Logger.d(this, id + " preformPurchaseActions()");
         double factor = getPurchaseFactor();
-        effectsToApply.clear();
-        for (Effect effect : purchaseData.getBaseCosts()) {
-            // TODO: check for duplicate targetIds in effects
-            Incrementer inc = incrementerManager.getIncrementer(effect.getTargetId());
+        Effect baseCost = purchaseData.getBaseCost();
+        if (baseCost != null) {
+            Incrementer inc = incrementerManager.getIncrementer(baseCost.getTargetId());
             if (inc == null) {
-                throw new UnknownIncrementerRuntimeError(effect.getTargetId());
+                throw new UnknownIncrementerRuntimeError(baseCost.getTargetId());
             }
             double effectValue = 0.0;
-            switch (effect.getFunction()) {
+            switch (baseCost.getFunction()) {
                 case ADD:
-                    effectValue = effect.getValue() * factor;
+                    effectValue = baseCost.getValue() * factor;
                     break;
                 case SUB:
-                    effectValue = -effect.getValue() * factor;
+                    effectValue = -baseCost.getValue() * factor;
                     break;
                 default:
                     // ignore divide and multiplier for cost effects value
-                    Logger.d(this, "> ignoring effect function " + effect.getFunction() + " " + effect.getTargetId());
+                    Logger.d(this, "> ignoring effect function " + baseCost.getFunction() + " " + baseCost.getTargetId());
             }
             boolean canApply = inc.canApplyChange(effectValue);
             if (!canApply) {
                 Logger.d(this, "> unable to make purchase");
                 return false;
             }
-            effectsToApply.put(inc, effectValue);
-        }
-
-        for (Map.Entry<Incrementer, Double> entry : effectsToApply.entrySet()) {
-            boolean changeApplied = entry.getKey().modifyValue(entry.getValue());
+            boolean changeApplied = inc.modifyValue(effectValue);
             if (!changeApplied) {
-                throw new IllegalStateException("Attempted to apply change failed: " + entry.getValue() + " targeting " + entry.getKey().getId() + " with current value " + entry.getKey().getValue());
+                throw new IllegalStateException("Attempted to apply change failed: " + effectValue + " targeting " + inc.getId() + " with current value " + inc.getValue());
             }
         }
 

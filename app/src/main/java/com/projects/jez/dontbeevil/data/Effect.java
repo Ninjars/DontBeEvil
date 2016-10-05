@@ -11,7 +11,12 @@ public class Effect {
     private final String targetId;
     private final double value;
     private final Incrementer.Function function;
-    public static Effect create(EffectScript effect) {
+
+    @Nullable
+    public static Effect create(@Nullable EffectScript effect) {
+        if (effect == null) {
+            return null;
+        }
         return Effect.create(effect.getTargetId(), effect.getValue(),
                 Incrementer.Function.getFunctionFromKey(effect.getFunction()));
     }
