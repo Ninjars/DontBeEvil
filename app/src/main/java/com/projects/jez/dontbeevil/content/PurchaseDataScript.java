@@ -1,6 +1,7 @@
 package com.projects.jez.dontbeevil.content;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -12,14 +13,14 @@ import java.util.List;
  */
 public class PurchaseDataScript {
     @SerializedName("base_cost")
-    EffectScript baseCost;
+    private EffectScript baseCost;
     @SerializedName("level_multiplier")
-    double levelFactor = 1.0;
-    List<EffectScript> effects;
+    private double levelFactor = 1.0;
+    private List<EffectScript> effects;
 
-    @NonNull
+    @Nullable
     public EffectScript getBaseCost() {
-        return baseCost == null ? null : baseCost;
+        return baseCost;
     }
 
     public double getLevelFactor() {
