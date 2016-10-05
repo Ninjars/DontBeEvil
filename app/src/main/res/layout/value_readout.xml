@@ -9,15 +9,31 @@
         android:id="@+id/readout_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         />
     <TextView
         android:id="@+id/readout_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@+id/readout_title"
+        android:layout_toEndOf="@+id/readout_title"
         android:layout_alignBaseline="@id/readout_title"
         android:paddingStart="@dimen/basic_padding"
         android:paddingLeft="@dimen/basic_padding"
+        />
+    <TextView
+        android:id="@+id/readout_cost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/readout_value"
+        android:layout_toEndOf="@+id/readout_value"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:gravity="end"
+        android:layout_alignBaseline="@id/readout_title"
+        android:paddingEnd="@dimen/basic_padding"
+        android:paddingRight="@dimen/basic_padding"
         />
     <ProgressBar
         android:id="@+id/readout_progress"

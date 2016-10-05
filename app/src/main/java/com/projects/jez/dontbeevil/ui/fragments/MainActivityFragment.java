@@ -90,9 +90,11 @@ public class MainActivityFragment extends Fragment {
                 TextView readoutTitle = (TextView) view.findViewById(R.id.readout_title);
                 readoutTitle.setText(data.getTitle());
                 final TextView readoutValue = (TextView) view.findViewById(R.id.readout_value);
+                final TextView readoutCost = (TextView) view.findViewById(R.id.readout_cost);
                 final ProgressBar progressBar = (ProgressBar) view.findViewById(R.id.readout_progress);
 
                 final WeakReference<TextView> weakValueView = new WeakReference<>(readoutValue);
+                final WeakReference<TextView> weakCostView = new WeakReference<>(readoutCost);
                 final WeakReference<ProgressBar> weakProgressBar = new WeakReference<>(progressBar);
 
                 data.addListener(new IIncrementerListener() {
@@ -103,6 +105,17 @@ public class MainActivityFragment extends Fragment {
                         if (strongValueView != null) {
                             strongValueView.setText(String.valueOf((int) updater.getValue()));
                         }
+
+                        TextView strongCostView = weakCostView.get();
+                        if (strongCostView != null) {
+                            Long value = updater.getCostValue();
+                            if (value == null) {
+                                strongCostView.setVisibility(View.GONE);
+                            } else {
+                                strongCostView.setVisibility(View.VISIBLE);
+                                strongCostView.setText(updater.getCostName() + ": "
+                                        + String.valueOf(-updater.getCostValue()));
+                            }
                         }
                     }
                 });
