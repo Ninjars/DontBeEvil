@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Created by Jez on 18/03/2016.
  */
-public class Incrementer {
+public class Incrementer implements IIncrementerUpdater {
     private static final boolean DEBUG_ALLOW_INVALID_PURCHASE_ACTIONS = false;
 
     private final @NonNull String id;
@@ -38,6 +38,17 @@ public class Incrementer {
 
     public double getValue() {
         return value;
+    }
+
+    @Override
+    public String getCostName() {
+        return purchaseData.getBaseCost().getTargetId();
+    }
+
+    @Override
+    @Nullable
+    public Long getCostValue() {
+        return getCurrentCost();
     }
 
     public enum Function {
@@ -154,7 +165,7 @@ public class Incrementer {
             loopTask = taskManager.startLoopingTask(id, loopData.getChargeTime(), loopTaskRunnable);
         }
         for (IIncrementerListener listener : listeners) {
-            listener.onValueUpdate(value);
+            listener.onUpdate(this);
         }
         return true;
     }
@@ -187,6 +198,9 @@ public class Incrementer {
     private void applyMultiplier(String applierId, double change) {
         multipliers.put(applierId, change);
         currentMultiplier = calculateCurrentMultiplier();
+        for (IIncrementerListener listener : listeners) {
+            listener.onUpdate(this);
+        }
     }
 
     private double calculateCurrentMultiplier() {
@@ -218,6 +232,7 @@ public class Incrementer {
 
     public void addListener(IIncrementerListener listener) {
         listeners.add(listener);
+        listener.onUpdate(this);
     }
 
     public String getTitle() {
@@ -241,35 +256,44 @@ public class Incrementer {
         return Math.pow(value + 1, purchaseData.getLevelFactor());
     }
 
-    public boolean preformPurchaseActions() {
-        Logger.d(this, id + " preformPurchaseActions()");
+    @Nullable
+    private Long getCurrentCost() {
         double factor = getPurchaseFactor();
         Effect baseCost = purchaseData.getBaseCost();
         if (baseCost != null) {
-            Incrementer inc = incrementerManager.getIncrementer(baseCost.getTargetId());
-            if (inc == null) {
-                throw new UnknownIncrementerRuntimeError(baseCost.getTargetId());
-            }
-            double effectValue = 0.0;
             switch (baseCost.getFunction()) {
                 case ADD:
-                    effectValue = baseCost.getValue() * factor;
-                    break;
+                    return Math.round(baseCost.getValue() * factor);
                 case SUB:
-                    effectValue = -baseCost.getValue() * factor;
-                    break;
+                    return Math.round(-baseCost.getValue() * factor);
                 default:
                     // ignore divide and multiplier for cost effects value
                     Logger.d(this, "> ignoring effect function " + baseCost.getFunction() + " " + baseCost.getTargetId());
+                    return null;
             }
-            boolean canApply = inc.canApplyChange(effectValue);
+        }
+        return null;
+    }
+
+    public boolean preformPurchaseActions() {
+        Logger.d(this, id + " preformPurchaseActions()");
+
+        Long cost = getCurrentCost();
+        if (null != cost) {
+            String targetId = purchaseData.getBaseCost().getTargetId();
+            Incrementer inc = incrementerManager.getIncrementer(targetId);
+            if (inc == null) {
+                throw new UnknownIncrementerRuntimeError(targetId);
+            }
+
+            boolean canApply = inc.canApplyChange(cost);
             if (!canApply) {
                 Logger.d(this, "> unable to make purchase");
                 return false;
             }
-            boolean changeApplied = inc.modifyValue(effectValue);
+            boolean changeApplied = inc.modifyValue(cost);
             if (!changeApplied) {
-                throw new IllegalStateException("Attempted to apply change failed: " + effectValue + " targeting " + inc.getId() + " with current value " + inc.getValue());
+                throw new IllegalStateException("Attempted to apply change failed: " + cost + " targeting " + inc.getId() + " with current value " + inc.getValue());
             }
         }
 

@@ -6,5 +6,5 @@ package com.projects.jez.dontbeevil.data;
 
 public interface IIncrementerListener {
 
-    void onValueUpdate(double value);
+    void onUpdate(IIncrementerUpdater updater);
 }

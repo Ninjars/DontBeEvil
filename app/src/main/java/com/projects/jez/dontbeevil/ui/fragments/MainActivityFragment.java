@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.projects.jez.dontbeevil.R;
 import com.projects.jez.dontbeevil.data.IIncrementerListener;
+import com.projects.jez.dontbeevil.data.IIncrementerUpdater;
 import com.projects.jez.dontbeevil.data.Incrementer;
 import com.projects.jez.dontbeevil.engine.LoopTaskManager;
 import com.projects.jez.dontbeevil.engine.Range;
@@ -91,16 +92,17 @@ public class MainActivityFragment extends Fragment {
                 final TextView readoutValue = (TextView) view.findViewById(R.id.readout_value);
                 final ProgressBar progressBar = (ProgressBar) view.findViewById(R.id.readout_progress);
 
-                final WeakReference<TextView> weakTextView = new WeakReference<>(readoutValue);
+                final WeakReference<TextView> weakValueView = new WeakReference<>(readoutValue);
                 final WeakReference<ProgressBar> weakProgressBar = new WeakReference<>(progressBar);
 
                 data.addListener(new IIncrementerListener() {
 
                     @Override
-                    public void onValueUpdate(double value) {
-                        TextView strongTextView = weakTextView.get();
-                        if (strongTextView != null) {
-                            strongTextView.setText(String.valueOf((int) value));
+                    public void onUpdate(IIncrementerUpdater updater) {
+                        TextView strongValueView = weakValueView.get();
+                        if (strongValueView != null) {
+                            strongValueView.setText(String.valueOf((int) updater.getValue()));
+                        }
                         }
                     }
                 });
