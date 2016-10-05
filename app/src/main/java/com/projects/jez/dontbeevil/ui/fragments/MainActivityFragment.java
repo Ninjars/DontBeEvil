@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +23,7 @@ import com.projects.jez.dontbeevil.ui.IncrementerComparator;
 import com.projects.jez.dontbeevil.ui.views.adapters.listadapters.ItemSelectionHandler;
 import com.projects.jez.dontbeevil.ui.views.adapters.listadapters.LayoutRowAdapter;
 import com.projects.jez.dontbeevil.ui.views.adapters.listadapters.ViewDataBinder;
+import com.projects.jez.utils.Logger;
 import com.projects.jez.utils.observable.ObservableList.ObservableList;
 
 import java.lang.ref.WeakReference;
@@ -32,8 +32,6 @@ import java.lang.ref.WeakReference;
  * A placeholder fragment containing a simple view.
  */
 public class MainActivityFragment extends Fragment {
-    private static final String TAG = MainActivityFragment.class.getSimpleName();
-    private static final boolean DLOG = true;
     private Handler mHandler;
     private Environment mEnvironment;
 
@@ -81,7 +79,7 @@ public class MainActivityFragment extends Fragment {
         super.onPause();
     }
 
-    private static void bindReadouts(View view, GameManager gameManager, final LoopTaskManager taskManager) {
+    private void bindReadouts(View view, GameManager gameManager, final LoopTaskManager taskManager) {
         GameState gameState = gameManager.getGameState();
         ObservableList<Incrementer> readouts = gameState.getReadouts().sort(new IncrementerComparator());
 
@@ -135,7 +133,7 @@ public class MainActivityFragment extends Fragment {
         readoutAdapter.setSelectionListener(new ItemSelectionHandler<Incrementer>() {
             @Override
             public void onSelected(Incrementer item) {
-                if (DLOG) Log.d(TAG, "onSelected() item " + item.getId());
+                Logger.d(MainActivityFragment.this, "onSelected() item " + item.getId());
                 item.preformPurchaseActions();
             }
         });

@@ -1,12 +1,12 @@
 package com.projects.jez.dontbeevil.managers;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.projects.jez.dontbeevil.content.ContentLoader;
 import com.projects.jez.dontbeevil.content.IncrementerScript;
 import com.projects.jez.dontbeevil.data.Incrementer;
 import com.projects.jez.dontbeevil.engine.LoopTaskManager;
+import com.projects.jez.utils.Logger;
 import com.projects.jez.utils.MapperUtils;
 import com.projects.jez.utils.observable.Mapper;
 
@@ -16,8 +16,6 @@ import java.util.List;
  * Created by Jez on 18/03/2016.
  */
 public final class Environment {
-    private static final String TAG = Environment.class.getSimpleName();
-    private static final boolean DLOG = true;
     private static Environment instance = null;
 
     private final IncrementerManager incrementerManager;
@@ -27,8 +25,8 @@ public final class Environment {
 
     public static synchronized Environment getInstance(Context context) {
         if (instance == null) {
-            Log.d(TAG, "### instantiated ###");
             instance = new Environment(context);
+            Logger.d(instance, "### instantiated ###");
         }
         return instance;
     }
@@ -42,7 +40,7 @@ public final class Environment {
         List<Incrementer> incrementers = MapperUtils.optionalMapOptionalList(contentLoader.getIncrementers(), new Mapper<IncrementerScript, Incrementer>() {
             @Override
             public Incrementer map(IncrementerScript arg) {
-                if (DLOG) Log.d(TAG, "creating incrementer with id " + arg.getId());
+                Logger.d(Environment.this, "creating incrementer with id " + arg.getId());
                 return Incrementer.create(arg, incrementerManager, taskManager);
             }
         });

@@ -2,7 +2,6 @@ package com.projects.jez.dontbeevil.data;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.projects.jez.dontbeevil.content.IncrementerScript;
 import com.projects.jez.dontbeevil.engine.ILoopingTask;
@@ -10,6 +9,7 @@ import com.projects.jez.dontbeevil.engine.LoopTaskManager;
 import com.projects.jez.dontbeevil.engine.Range;
 import com.projects.jez.dontbeevil.errors.UnknownIncrementerRuntimeError;
 import com.projects.jez.dontbeevil.managers.IncrementerManager;
+import com.projects.jez.utils.Logger;
 import com.projects.jez.utils.MapperUtils;
 import com.projects.jez.utils.Reducer;
 
@@ -22,8 +22,6 @@ import java.util.Map;
  * Created by Jez on 18/03/2016.
  */
 public class Incrementer {
-    private static final String TAG = Incrementer.class.getSimpleName();
-    private static final boolean DLOG = true;
     private static final boolean DEBUG_ALLOW_INVALID_PURCHASE_ACTIONS = false;
 
     private final @NonNull String id;
@@ -87,7 +85,7 @@ public class Incrementer {
     private Incrementer(@NonNull String id, @NonNull IncrementerMetadata meta,
                         @NonNull PurchaseData purchase, @Nullable LoopData loop,
                         @NonNull IncrementerManager incManager, @Nullable LoopTaskManager taskMngr) {
-        if (DLOG) Log.d(TAG, "init: " + id);
+        Logger.d(this, "init: " + id);
         this.id = id;
         this.taskManager = taskMngr;
         this.incrementerManager = incManager;
@@ -97,7 +95,7 @@ public class Incrementer {
         loopData = loop;
 
         if (loopData != null) {
-            if (DLOG) Log.d(TAG, id + " has loop data");
+            Logger.d(this, id + " has loop data");
             loopTaskRunnable = new Runnable() {
                 @Override
                 public void run() {
@@ -146,7 +144,7 @@ public class Incrementer {
      * @param change the value of the change.
      */
     public boolean modifyValue(double change) {
-        if (DLOG) Log.d(TAG, id + " modifyValue() " + change);
+        Logger.d(this, id + " modifyValue() " + change);
         if (!canApplyChange(change)) {
             return false;
         }
@@ -171,7 +169,7 @@ public class Incrementer {
      * @param change the value of the change.
      */
     public void applyChange(@NonNull String applierId, Function function, double change) {
-        if (DLOG) Log.d(TAG, id + " applyChange() " + function + " " + change);
+        Logger.d(this, id + " applyChange() " + function + " " + change);
         switch(function) {
             case ADD:
                 modifyValue(change);
@@ -185,7 +183,7 @@ public class Incrementer {
                 applyMultiplier(applierId, 1.0 / change);
                 break;
             default:
-                Log.e(TAG, "unsupported operation when lacking id: " + function);
+                Logger.e(this, "unsupported operation when lacking id: " + function);
         }
     }
 
@@ -247,7 +245,7 @@ public class Incrementer {
     }
 
     public boolean preformPurchaseActions() {
-        if (DLOG) Log.d(TAG, id + " preformPurchaseActions()");
+        Logger.d(this, id + " preformPurchaseActions()");
         double factor = getPurchaseFactor();
         effectsToApply.clear();
         for (Effect effect : purchaseData.getBaseCosts()) {
@@ -266,12 +264,11 @@ public class Incrementer {
                     break;
                 default:
                     // ignore divide and multiplier for cost effects value
-                    if (DLOG)
-                        Log.d(TAG, "> ignoring effect function " + effect.getFunction() + " " + effect.getTargetId());
+                    Logger.d(this, "> ignoring effect function " + effect.getFunction() + " " + effect.getTargetId());
             }
             boolean canApply = inc.canApplyChange(effectValue);
             if (!canApply) {
-                if (DLOG) Log.d(TAG, "> unable to make purchase");
+                Logger.d(this, "> unable to make purchase");
                 return false;
             }
             effectsToApply.put(inc, effectValue);
@@ -291,7 +288,7 @@ public class Incrementer {
                 throw new UnknownIncrementerRuntimeError(targetId);
             }
             double change = effect.getValue();
-            if (DLOG) Log.d(TAG, "> applying effect " + effect.getTargetId() + " " + change);
+            Logger.d(this, "> applying effect " + effect.getTargetId() + " " + change);
             inc.applyChange(id, effect.getFunction(), change);
         }
         return true;
