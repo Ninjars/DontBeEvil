@@ -5,10 +5,10 @@ import com.google.gson.annotations.SerializedName;
 /**
  * Created by Jez on 25/03/2016.
  */
-public class IncrementerMetadataScript {
+public class MetadataScript {
     @SerializedName("title")
     String title;
-    @SerializedName("plays")
+    @SerializedName("caption")
     String caption;
     @SerializedName("sort_order")
     Integer sortOrder;

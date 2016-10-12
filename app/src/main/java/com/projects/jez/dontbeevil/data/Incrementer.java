@@ -25,7 +25,8 @@ public class Incrementer implements IIncrementerUpdater {
     private static final boolean DEBUG_ALLOW_INVALID_PURCHASE_ACTIONS = false;
 
     private final @NonNull String id;
-    private final @NonNull IncrementerMetadata metadata;
+    private final @NonNull
+    Metadata metadata;
     private final @Nullable LoopTaskManager taskManager;
     private final @NonNull PurchaseData purchaseData;
     private final @Nullable LoopData loopData;
@@ -76,7 +77,7 @@ public class Incrementer implements IIncrementerUpdater {
 
     public static Incrementer create(@NonNull IncrementerScript arg, @NonNull IncrementerManager incManager,
                                      @Nullable LoopTaskManager taskMngr) {
-        IncrementerMetadata meta = IncrementerMetadata.create(arg.getMetadata());
+        Metadata meta = Metadata.create(arg.getMetadata());
         PurchaseData purchase = PurchaseData.create(arg.getPurchaseData());
         LoopData loop = LoopData.create(arg.getLoopData());
         String id = arg.getId();
@@ -84,13 +85,13 @@ public class Incrementer implements IIncrementerUpdater {
         return create(id, meta, purchase, loop, incManager, taskMngr);
     }
 
-    public static Incrementer create(@NonNull String id, @NonNull IncrementerMetadata metadata,
+    public static Incrementer create(@NonNull String id, @NonNull Metadata metadata,
                                      @NonNull PurchaseData purchaseData, @Nullable LoopData loopData,
                                      @NonNull IncrementerManager incManager, @Nullable LoopTaskManager taskMngr) {
         return new Incrementer(id, metadata, purchaseData, loopData, incManager, taskMngr);
     }
 
-    private Incrementer(@NonNull String id, @NonNull IncrementerMetadata meta,
+    private Incrementer(@NonNull String id, @NonNull Metadata meta,
                         @NonNull PurchaseData purchase, @Nullable LoopData loop,
                         @NonNull IncrementerManager incManager, @Nullable LoopTaskManager taskMngr) {
         Logger.d(this, "init: " + id);
