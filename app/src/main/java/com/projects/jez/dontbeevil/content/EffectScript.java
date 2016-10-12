@@ -10,6 +10,7 @@ public class EffectScript {
     String targetId;
     double value;
     String type;
+    boolean disabled;
 
     public String getTargetId() {
         return targetId;
@@ -21,5 +22,9 @@ public class EffectScript {
 
     public String getFunction() {
         return type;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
     }
 }

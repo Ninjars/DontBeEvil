@@ -15,6 +15,7 @@ import com.projects.jez.utils.Reducer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -30,6 +31,7 @@ public class Incrementer implements IIncrementerUpdater {
     private final @Nullable LoopData loopData;
     private final @NonNull IncrementerManager incrementerManager;
     private final HashMap<String, Double> multipliers = new HashMap<>();
+    private final HashSet<Effect> disabledEffects = new HashSet<>();
     private final List<IIncrementerListener> listeners = new ArrayList<>();
     private final Runnable loopTaskRunnable;
     private double currentMultiplier;
@@ -102,11 +104,22 @@ public class Incrementer implements IIncrementerUpdater {
 
         if (loopData != null) {
             Logger.d(this, id + " has loop data");
+
+            // populate set of disabled effects
+            for (Effect effect : loopData.getEffects()) {
+                if (effect.isDisabled()) {
+                    disabledEffects.add(effect);
+                }
+            }
+
             loopTaskRunnable = new Runnable() {
                 @Override
                 public void run() {
                     double count = value;
                     for (Effect effect : loopData.getEffects()) {
+                        if (disabledEffects.contains(effect)) {
+                            continue;
+                        }
                         String targetId = effect.getTargetId();
                         Incrementer inc = incrementerManager.getIncrementer(targetId);
                         if (inc == null) {
