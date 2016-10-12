@@ -187,8 +187,23 @@ public class Incrementer implements IIncrementerUpdater {
         }
     }
 
+    /**
+     * Multipliers are tracked by source id, so the source of each change is accountable.
+     * Multiplier values are used as a factor, so '0.5' would be a 50% increase, '-1' would be a
+     * 100% decrease.  All multiplier values are summed to get the final factor to apply to the
+     * incrementer's effects when it loops.
+     *
+     * @param applierId Id of source of new value
+     * @param change value to add to the multiplication factor
+     */
     private void applyMultiplier(String applierId, double change) {
-        multipliers.put(applierId, change);
+        if (multipliers.containsKey(applierId)) {
+            Logger.i(this, "updating multiplier " + applierId);
+            multipliers.put(applierId, multipliers.get(applierId) + change);
+        } else {
+            Logger.i(this, "applying multiplier " + applierId);
+            multipliers.put(applierId, change);
+        }
         currentMultiplier = calculateCurrentMultiplier();
         for (IIncrementerListener listener : listeners) {
             listener.onUpdate(this);
