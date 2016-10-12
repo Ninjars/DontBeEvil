@@ -55,4 +55,9 @@ public class LoopTaskManager {
             mTaskHandlers.remove(id);
         }
     }
+
+    public void clear() {
+        pauseAll();
+        mTaskHandlers.clear();
+    }
 }

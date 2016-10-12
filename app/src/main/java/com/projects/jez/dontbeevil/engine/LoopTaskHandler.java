@@ -6,7 +6,7 @@ import android.os.Looper;
 /**
  * Created by jez on 22/03/2016.
  */
-class LoopTaskHandler implements ILoopingTask {
+public class LoopTaskHandler implements ILoopingTask {
 
     private final Handler cLoopHandler = new Handler(Looper.getMainLooper());
     private final Runnable mTask;
@@ -15,7 +15,7 @@ class LoopTaskHandler implements ILoopingTask {
     private Long lastUpdateStopped;
     private long mLoopPeriod;
 
-    LoopTaskHandler(final Runnable task, long loopTime) {
+    public LoopTaskHandler(final Runnable task, long loopTime) {
         mTask = new Runnable() {
             @Override
             public void run() {

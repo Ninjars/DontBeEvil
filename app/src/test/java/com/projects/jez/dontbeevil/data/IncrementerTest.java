@@ -1,6 +1,5 @@
 package com.projects.jez.dontbeevil.data;
 
-import com.projects.jez.dontbeevil.engine.LoopTaskManager;
 import com.projects.jez.dontbeevil.engine.Range;
 import com.projects.jez.dontbeevil.managers.IncrementerManager;
 
@@ -29,17 +28,19 @@ public class IncrementerTest {
     private static final String caption2 = "test2 caption";
     private static final double levelFactor = 2;
     private IncrementerManager incrementerManager;
-    private LoopTaskManager loopTaskManager;
+    private TestLoopTaskManager loopTaskManager;
     private PurchaseData purchaseData1;
     private IncrementerMetadata incrementerMetadata1;
     private LoopData loopData1;
     private IncrementerMetadata incrementerMetadata2;
     private PurchaseData purchaseData2;
+    private LoopData loopDataDisabled;
+
 
     @Before
     public void setUp() throws Exception {
+        loopTaskManager = new TestLoopTaskManager();
         incrementerManager = new IncrementerManager();
-        loopTaskManager = new LoopTaskManager();
         Effect baseCost1 = Effect.create(id1, -1, Incrementer.Function.VALUE, false);
         List<Effect> baseEffect1 = Collections.singletonList(Effect.create(id1, 5, Incrementer.Function.VALUE, false));
         purchaseData1 = PurchaseData.create(baseCost1, baseEffect1, levelFactor);
@@ -51,6 +52,10 @@ public class IncrementerTest {
         List<Effect> baseEffect2 = Collections.singletonList(Effect.create(id2, 1, Incrementer.Function.VALUE, false));
         purchaseData2 = PurchaseData.create(baseCost2, baseEffect2, levelFactor);
         incrementerMetadata2 = IncrementerMetadata.create(name2, caption2, 0);
+
+        // disabled cost incremementer
+        List<Effect> loopEffectDisabled = Collections.singletonList(Effect.create(id1, -1, Incrementer.Function.VALUE, true));
+        loopDataDisabled = LoopData.create(100, loopEffectDisabled);
     }
 
     @After
@@ -64,6 +69,10 @@ public class IncrementerTest {
 
     private Incrementer createNonLoopingIncrementer2() {
         return Incrementer.create(id2, incrementerMetadata2, purchaseData2, null, incrementerManager, null);
+    }
+
+    private Incrementer createLoopingDisabledIncrementer2() {
+        return Incrementer.create(id2, incrementerMetadata2, purchaseData2, loopDataDisabled, incrementerManager, loopTaskManager);
     }
 
     private Incrementer createLoopingIncrementer1() {
@@ -81,6 +90,12 @@ public class IncrementerTest {
     public void getId() throws Exception {
         Incrementer incrementer = createNonLoopingIncrementer1();
         assertEquals(id1, incrementer.getId());
+    }
+
+    @Test
+    public void getCaption() throws Exception {
+        Incrementer incrementer = createNonLoopingIncrementer1();
+        assertEquals(caption1, incrementer.getCaption());
     }
 
     @Test
@@ -128,11 +143,13 @@ public class IncrementerTest {
     public void getRange_loop_not_started() throws Exception {
         Incrementer incrementer = createLoopingIncrementer1();
         assertSame(Range.empty(), incrementer.getRange());
+        loopTaskManager.clear();
     }
 
     @Test
     public void getRange_loop_started() throws Exception {
         Incrementer incrementer = createLoopingIncrementer1();
+        incrementerManager.addIncrementer(incrementer);
         boolean appliedAddition = incrementer.modifyValue(1.0);
         assertEquals(true, appliedAddition);
         assertEquals(1.0, incrementer.getValue());
@@ -144,6 +161,8 @@ public class IncrementerTest {
         assertEquals(0.0, incrementer.getValue());
         assertNotNull(incrementer.getRange());
         assertSame(Range.empty(), incrementer.getRange());
+        incrementerManager.removeIncrementer(incrementer);
+        loopTaskManager.clear();
     }
 
     @Test
@@ -275,4 +294,44 @@ public class IncrementerTest {
         incrementerManager.removeIncrementer(incrementer2);
     }
 
+    @Test
+    public void enabledIncrementer() throws Exception {
+        Incrementer incrementer1 = createLoopingIncrementer1();
+        incrementerManager.addIncrementer(incrementer1);
+        assertEquals(0.0, incrementer1.getValue());
+
+        incrementer1.modifyValue(1);
+        assertEquals(1.0, incrementer1.getValue());
+
+        boolean ran = loopTaskManager.runLastTask();
+        assertEquals(true, ran);
+        assertEquals(6.0, incrementer1.getValue());
+
+        incrementerManager.removeIncrementer(incrementer1);
+        loopTaskManager.clear();
+    }
+
+    @Test
+    public void disabledIncrementer() throws Exception {
+        Incrementer incrementer1 = createNonLoopingIncrementer1();
+        Incrementer disabled = createLoopingDisabledIncrementer2();
+        incrementerManager.addIncrementer(incrementer1);
+        incrementerManager.addIncrementer(disabled);
+        assertEquals(0.0, incrementer1.getValue());
+        assertEquals(0.0, disabled.getValue());
+
+        incrementer1.modifyValue(2);
+        assertEquals(2.0, incrementer1.getValue());
+        disabled.modifyValue(1);
+        assertEquals(1.0, disabled.getValue());
+        assertEquals(2.0, incrementer1.getValue());
+
+        boolean ran = loopTaskManager.runLastTask();
+        assertEquals(true, ran);
+        assertEquals(2.0, incrementer1.getValue());
+
+        incrementerManager.removeIncrementer(incrementer1);
+        incrementerManager.removeIncrementer(disabled);
+        loopTaskManager.clear();
+    }
 }
