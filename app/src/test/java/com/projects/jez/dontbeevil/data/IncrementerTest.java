@@ -40,15 +40,15 @@ public class IncrementerTest {
     public void setUp() throws Exception {
         incrementerManager = new IncrementerManager();
         loopTaskManager = new LoopTaskManager();
-        Effect baseCost1 = Effect.create(id1, 1, Incrementer.Function.SUB);
-        List<Effect> baseEffect1 = Collections.singletonList(Effect.create(id1, 5, Incrementer.Function.ADD));
+        Effect baseCost1 = Effect.create(id1, -1, Incrementer.Function.VALUE, false);
+        List<Effect> baseEffect1 = Collections.singletonList(Effect.create(id1, 5, Incrementer.Function.VALUE, false));
         purchaseData1 = PurchaseData.create(baseCost1, baseEffect1, levelFactor);
         incrementerMetadata1 = IncrementerMetadata.create(name1, caption1, 0);
-        List<Effect> loopEffect = Collections.singletonList(Effect.create(id1, 5, Incrementer.Function.ADD));
+        List<Effect> loopEffect = Collections.singletonList(Effect.create(id1, 5, Incrementer.Function.VALUE, false));
         loopData1 = LoopData.create(100, loopEffect);
 
-        Effect baseCost2 = Effect.create(id1, 1, Incrementer.Function.SUB);
-        List<Effect> baseEffect2 = Collections.singletonList(Effect.create(id2, 1, Incrementer.Function.ADD));
+        Effect baseCost2 = Effect.create(id1, -1, Incrementer.Function.VALUE, false);
+        List<Effect> baseEffect2 = Collections.singletonList(Effect.create(id2, 1, Incrementer.Function.VALUE, false));
         purchaseData2 = PurchaseData.create(baseCost2, baseEffect2, levelFactor);
         incrementerMetadata2 = IncrementerMetadata.create(name2, caption2, 0);
     }

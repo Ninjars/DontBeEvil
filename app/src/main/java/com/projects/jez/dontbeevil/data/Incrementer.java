@@ -52,10 +52,8 @@ public class Incrementer implements IIncrementerUpdater {
     }
 
     public enum Function {
-        ADD("+"),
-        SUB("-"),
-        MULT("*"),
-        DIV("/")
+        VALUE("value"),
+        MULTIPLIER("multi")
         ;
         String key;
         Function(String key) {
@@ -125,20 +123,6 @@ public class Incrementer implements IIncrementerUpdater {
         }
     }
 
-    public boolean canApplyChange(Function function, double change) {
-        switch(function) {
-            case ADD:
-                // no action
-                break;
-            case SUB:
-                change = -change;
-                break;
-            default:
-                return true;
-        }
-        return canApplyChange(change);
-    }
-
     public boolean canApplyChange(double change) {
         //noinspection SimplifiableConditionalExpression
         return DEBUG_ALLOW_INVALID_PURCHASE_ACTIONS ? true : value + change >= 0;
@@ -179,16 +163,11 @@ public class Incrementer implements IIncrementerUpdater {
     public void applyChange(@NonNull String applierId, Function function, double change) {
         Logger.d(this, id + " applyChange() " + function + " " + change);
         switch(function) {
-            case ADD:
+            case VALUE:
                 modifyValue(change);
                 break;
-            case SUB:
-                modifyValue(-change);
-                break;
-            case MULT:
+            case MULTIPLIER:
                 applyMultiplier(applierId, change);
-            case DIV:
-                applyMultiplier(applierId, 1.0 / change);
                 break;
             default:
                 Logger.e(this, "unsupported operation when lacking id: " + function);
@@ -262,12 +241,10 @@ public class Incrementer implements IIncrementerUpdater {
         Effect baseCost = purchaseData.getBaseCost();
         if (baseCost != null) {
             switch (baseCost.getFunction()) {
-                case ADD:
+                case VALUE:
                     return Math.round(baseCost.getValue() * factor);
-                case SUB:
-                    return Math.round(-baseCost.getValue() * factor);
                 default:
-                    // ignore divide and multiplier for cost effects value
+                    // ignore multiplier for cost effects value
                     Logger.d(this, "> ignoring effect function " + baseCost.getFunction() + " " + baseCost.getTargetId());
                     return null;
             }

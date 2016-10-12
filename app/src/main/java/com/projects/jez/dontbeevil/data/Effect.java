@@ -28,7 +28,7 @@ public class Effect {
     private Effect(String targetId, double value, @Nullable Incrementer.Function function) {
         this.targetId = targetId;
         this.value = value;
-        this.function = function == null ? Incrementer.Function.ADD : function;
+        this.function = function == null ? Incrementer.Function.VALUE : function;
     }
 
     public String getTargetId() {
