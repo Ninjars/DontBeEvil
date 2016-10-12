@@ -25,13 +25,19 @@ public class ContentLoader {
     private static final Gson gson = new Gson();
     private static final JsonParser parser = new JsonParser();
     private final List<IncrementerScript> mIncrementers;
+    private final List<IncrementerScript> mUpgrades;
 
     public ContentLoader(Context context) {
         mIncrementers = loadAssetList(context, "incrementers.json", IncrementerScript.class);
+        mUpgrades = loadAssetList(context, "upgrades.json", IncrementerScript.class);
     }
 
     public List<IncrementerScript> getIncrementers() {
         return mIncrementers;
+    }
+
+    public List<IncrementerScript> getUpgrades() {
+        return mUpgrades;
     }
 
     private <T> List<T> loadAssetList(Context context, String assetPath, Class<T> scriptClass) {

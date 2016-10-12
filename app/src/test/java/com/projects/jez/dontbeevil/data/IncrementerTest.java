@@ -43,14 +43,14 @@ public class IncrementerTest {
         incrementerManager = new IncrementerManager();
         Effect baseCost1 = Effect.create(id1, -1, Incrementer.Function.VALUE, false);
         List<Effect> baseEffect1 = Collections.singletonList(Effect.create(id1, 5, Incrementer.Function.VALUE, false));
-        purchaseData1 = PurchaseData.create(baseCost1, baseEffect1, Collections.<Toggle>emptyList(), levelFactor);
+        purchaseData1 = PurchaseData.create(baseCost1, false, baseEffect1, Collections.<Toggle>emptyList(), levelFactor);
         incrementerMetadata1 = Metadata.create(name1, caption1, 0);
         List<Effect> loopEffect = Collections.singletonList(Effect.create(id1, 5, Incrementer.Function.VALUE, false));
         loopData1 = LoopData.create(100, loopEffect);
 
         Effect baseCost2 = Effect.create(id1, -1, Incrementer.Function.VALUE, false);
         List<Effect> baseEffect2 = Collections.singletonList(Effect.create(id2, 1, Incrementer.Function.VALUE, false));
-        purchaseData2 = PurchaseData.create(baseCost2, baseEffect2, Collections.<Toggle>emptyList(), levelFactor);
+        purchaseData2 = PurchaseData.create(baseCost2, false, baseEffect2, Collections.<Toggle>emptyList(), levelFactor);
         incrementerMetadata2 = Metadata.create(name2, caption2, 0);
 
         // disabled cost incremementer

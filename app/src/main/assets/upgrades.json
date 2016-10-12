@@ -8,17 +8,22 @@
 		},
 		"purchase_data": {
 			"is_unique": true,
-			"base_cost": [
-				{
+			"base_cost": {
 					"target_id": "plays",
-					"value": -5000
-				}
-			],
+					"value": -100
+				},
 			"effects": [
 				{
 					"target_id": "players",
 					"value": 0.5,
 					"type": "multi"
+				}
+			],
+			"toggles": [
+				{
+					"target_id": "players",
+					"effect_id": "shares",
+					"enable": true
 				}
 			]
 		}

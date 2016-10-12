@@ -25,14 +25,13 @@ public class Incrementer implements IIncrementerUpdater {
     private static final boolean DEBUG_ALLOW_INVALID_PURCHASE_ACTIONS = false;
 
     private final @NonNull String id;
-    private final @NonNull
-    Metadata metadata;
+    private final @NonNull Metadata metadata;
     private final @Nullable LoopTaskManager taskManager;
     private final @NonNull PurchaseData purchaseData;
     private final @Nullable LoopData loopData;
     private final @NonNull IncrementerManager incrementerManager;
     private final HashMap<String, Double> multipliers = new HashMap<>();
-    private final HashSet<Effect> disabledEffects = new HashSet<>();
+    private final HashSet<String> disabledEffects = new HashSet<>();
     private final List<IIncrementerListener> listeners = new ArrayList<>();
     private final Runnable loopTaskRunnable;
     private double currentMultiplier;
@@ -109,7 +108,7 @@ public class Incrementer implements IIncrementerUpdater {
             // populate set of disabled effects
             for (Effect effect : loopData.getEffects()) {
                 if (effect.isDisabled()) {
-                    disabledEffects.add(effect);
+                    disabledEffects.add(effect.getTargetId());
                 }
             }
 
@@ -118,7 +117,7 @@ public class Incrementer implements IIncrementerUpdater {
                 public void run() {
                     double count = value;
                     for (Effect effect : loopData.getEffects()) {
-                        if (disabledEffects.contains(effect)) {
+                        if (disabledEffects.contains(effect.getTargetId())) {
                             continue;
                         }
                         String targetId = effect.getTargetId();
@@ -313,6 +312,26 @@ public class Incrementer implements IIncrementerUpdater {
             Logger.d(this, "> applying effect " + effect.getTargetId() + " " + change);
             inc.applyChange(id, effect.getFunction(), change);
         }
+
+        for (Toggle toggle : purchaseData.getToggles()) {
+            String targetId = toggle.getTargetId();
+            Incrementer inc = incrementerManager.getIncrementer(targetId);
+            if (inc == null) {
+                throw new UnknownIncrementerRuntimeError(targetId);
+            }
+            String effectId = toggle.getEffectId();
+            boolean enable = toggle.isEnable();
+            inc.toggle(effectId, enable);
+        }
+
         return true;
+    }
+
+    private void toggle(String effectId, boolean enable) {
+        if (enable) {
+            disabledEffects.remove(effectId);
+        } else {
+            disabledEffects.add(effectId);
+        }
     }
 }
