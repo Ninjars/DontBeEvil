@@ -125,7 +125,7 @@ public class MainActivityFragment extends Fragment {
                     progressBar.setVisibility(View.GONE);
                 } else {
                     progressBar.setVisibility(View.VISIBLE);
-                    taskManager.startLoopingTask(getUpdateTaskKey(data.getId()), 15, new Runnable() {
+                    taskManager.startOrReplaceLoopingTask(getUpdateTaskKey(data.getId()), 15, new Runnable() {
                         @Override
                         public void run() {
                             long currentTime = System.currentTimeMillis();

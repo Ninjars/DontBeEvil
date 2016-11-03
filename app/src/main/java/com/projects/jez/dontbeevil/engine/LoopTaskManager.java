@@ -24,6 +24,11 @@ public class LoopTaskManager {
         return handler;
     }
 
+    public ILoopingTask startOrReplaceLoopingTask(String id, int period, Runnable task) {
+        stopLoopingTask(id);
+        return startLoopingTask(id, period, task);
+    }
+
     public void updatePeriod(String id, long newPeriod) {
         LoopTaskHandler handler = mTaskHandlers.get(id);
         if (handler == null) {
