@@ -3,6 +3,7 @@ package com.projects.jez.dontbeevil.data;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.projects.jez.dontbeevil.DebugConfig;
 import com.projects.jez.dontbeevil.content.IncrementerScript;
 import com.projects.jez.dontbeevil.engine.ILoopingTask;
 import com.projects.jez.dontbeevil.engine.LoopTaskManager;
@@ -22,7 +23,7 @@ import java.util.List;
  * Created by Jez on 18/03/2016.
  */
 public class Incrementer implements IIncrementerUpdater {
-    private static final boolean DEBUG_ALLOW_INVALID_PURCHASE_ACTIONS = false;
+    private static final boolean DEBUG_ALLOW_INVALID_PURCHASE_ACTIONS = DebugConfig.DEBUG_ALLOW_INVALID_PURCHASE_ACTIONS;
 
     private final @NonNull String id;
     private final @NonNull Metadata metadata;
