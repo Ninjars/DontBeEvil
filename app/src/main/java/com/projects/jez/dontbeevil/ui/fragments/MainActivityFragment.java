@@ -136,10 +136,11 @@ public class MainActivityFragment extends Fragment {
                             Range range = data.getRange();
                             if (range == null) {
                                 strongProgressBar.setProgress(0);
+                            } else {
+                                double progression = range.getCappedProgression(currentTime);
+                                int progressValue = (int) Math.floor(progression * strongProgressBar.getMax());
+                                strongProgressBar.setProgress(progressValue);
                             }
-                            double progression = range.getCappedProgression(currentTime);
-                            int progressValue = (int) Math.floor(progression * strongProgressBar.getMax());
-                            strongProgressBar.setProgress(progressValue);
                         }
                     });
                 }
