@@ -285,8 +285,9 @@ public class Incrementer implements IIncrementerUpdater {
         Logger.d(this, id + " preformPurchaseActions()");
 
         Long cost = getCurrentCost();
-        if (null != cost) {
-            String targetId = purchaseData.getBaseCost().getTargetId();
+        Effect baseCost = purchaseData.getBaseCost();
+        if (null != cost && null != baseCost) {
+            String targetId = baseCost.getTargetId();
             Incrementer inc = incrementerManager.getIncrementer(targetId);
             if (inc == null) {
                 throw new UnknownIncrementerRuntimeError(targetId);
