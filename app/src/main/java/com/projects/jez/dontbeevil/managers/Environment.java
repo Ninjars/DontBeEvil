@@ -45,6 +45,15 @@ public final class Environment {
             }
         });
         incrementerManager.addAll(incrementers);
+
+        List<Incrementer> upgrades = MapperUtils.optionalMapOptionalList(contentLoader.getUpgrades(), new Mapper<IncrementerScript, Incrementer>() {
+            @Override
+            public Incrementer map(IncrementerScript arg) {
+                return Incrementer.create(arg, incrementerManager, taskManager);
+            }
+        });
+        incrementerManager.addAll(upgrades);
+
         gameManager = new GameManager(incrementerManager);
     }
 

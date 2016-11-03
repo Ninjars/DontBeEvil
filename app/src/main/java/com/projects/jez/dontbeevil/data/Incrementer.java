@@ -17,7 +17,6 @@ import com.projects.jez.utils.Reducer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 /**
  * Created by Jez on 18/03/2016.
@@ -33,7 +32,7 @@ public class Incrementer implements IIncrementerUpdater {
     private final @NonNull IncrementerManager incrementerManager;
     private final HashMap<String, Double> multipliers = new HashMap<>();
     private final HashSet<String> disabledEffects = new HashSet<>();
-    private final List<IIncrementerListener> listeners = new ArrayList<>();
+    private @Nullable IIncrementerListener listener;
     private final Runnable loopTaskRunnable;
     private double currentMultiplier;
     private double value = 0.0;
@@ -162,9 +161,7 @@ public class Incrementer implements IIncrementerUpdater {
         if (loopData != null && loopTask == null && value > 0 && taskManager != null) {
             loopTask = taskManager.startLoopingTask(id, loopData.getChargeTime(), loopTaskRunnable);
         }
-        for (IIncrementerListener listener : listeners) {
-            listener.onUpdate(this);
-        }
+        updateListener();
         return true;
     }
 
@@ -206,9 +203,8 @@ public class Incrementer implements IIncrementerUpdater {
             multipliers.put(applierId, change);
         }
         currentMultiplier = calculateCurrentMultiplier();
-        for (IIncrementerListener listener : listeners) {
-            listener.onUpdate(this);
-        }
+
+        updateListener();
     }
 
     private double calculateCurrentMultiplier() {
@@ -238,9 +234,15 @@ public class Incrementer implements IIncrementerUpdater {
         return id;
     }
 
-    public void addListener(IIncrementerListener listener) {
-        listeners.add(listener);
-        listener.onUpdate(this);
+    public void attachListener(@Nullable IIncrementerListener listener) {
+        this.listener = listener;
+        updateListener();
+    }
+
+    private void updateListener() {
+        if (listener != null) {
+            listener.onUpdate(this);
+        }
     }
 
     public String getTitle() {
@@ -326,6 +328,10 @@ public class Incrementer implements IIncrementerUpdater {
             inc.toggle(effectId, enable);
         }
 
+        if (purchaseData.isUnique()) {
+            Logger.d(this, "removing unique incrementer " + id);
+            incrementerManager.removeIncrementer(this);
+        }
         return true;
     }
 
