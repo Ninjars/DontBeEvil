@@ -256,7 +256,7 @@ public class Incrementer implements IIncrementerUpdater {
     }
 
     public Integer getSortOrder() {
-        return metadata.getSortOrder();
+        return isUpgrade ? -metadata.getSortOrder() : metadata.getSortOrder();
     }
 
     /**

@@ -4,7 +4,7 @@
 		"metadata": {
 			"title": "Crash Reports",
 			"caption": "Get automatic reports when things go wrong! Boost Plays generation from Players",
-			"sort_order": 0
+			"sort_order": 1
 		},
 		"purchase_data": {
 			"is_unique": true,
