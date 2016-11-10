@@ -64,19 +64,19 @@ public class IncrementerTest {
     }
 
     private Incrementer createNonLoopingIncrementer1() {
-        return Incrementer.create(id1, incrementerMetadata1, purchaseData1, null, incrementerManager, null);
+        return Incrementer.create(id1, incrementerMetadata1, purchaseData1, null, incrementerManager, null, false);
     }
 
     private Incrementer createNonLoopingIncrementer2() {
-        return Incrementer.create(id2, incrementerMetadata2, purchaseData2, null, incrementerManager, null);
+        return Incrementer.create(id2, incrementerMetadata2, purchaseData2, null, incrementerManager, null, false);
     }
 
     private Incrementer createLoopingDisabledIncrementer2() {
-        return Incrementer.create(id2, incrementerMetadata2, purchaseData2, loopDataDisabled, incrementerManager, loopTaskManager);
+        return Incrementer.create(id2, incrementerMetadata2, purchaseData2, loopDataDisabled, incrementerManager, loopTaskManager, false);
     }
 
     private Incrementer createLoopingIncrementer1() {
-        return Incrementer.create(id1, incrementerMetadata1, purchaseData1, loopData1, incrementerManager, loopTaskManager);
+        return Incrementer.create(id1, incrementerMetadata1, purchaseData1, loopData1, incrementerManager, loopTaskManager, false);
     }
 
     @Test

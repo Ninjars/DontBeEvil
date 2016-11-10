@@ -32,6 +32,7 @@ public class Incrementer implements IIncrementerUpdater {
     private final @NonNull IncrementerManager incrementerManager;
     private final HashMap<String, Double> multipliers = new HashMap<>();
     private final HashSet<String> disabledEffects = new HashSet<>();
+    private final boolean isUpgrade;
     private @Nullable IIncrementerListener listener;
     private final Runnable loopTaskRunnable;
     private double currentMultiplier;
@@ -75,28 +76,29 @@ public class Incrementer implements IIncrementerUpdater {
     }
 
     public static Incrementer create(@NonNull IncrementerScript arg, @NonNull IncrementerManager incManager,
-                                     @Nullable LoopTaskManager taskMngr) {
+                                     @Nullable LoopTaskManager taskMngr, boolean isUpgrade) {
         Metadata meta = Metadata.create(arg.getMetadata());
         PurchaseData purchase = PurchaseData.create(arg.getPurchaseData());
         LoopData loop = LoopData.create(arg.getLoopData());
         String id = arg.getId();
 
-        return create(id, meta, purchase, loop, incManager, taskMngr);
+        return create(id, meta, purchase, loop, incManager, taskMngr, isUpgrade);
     }
 
-    public static Incrementer create(@NonNull String id, @NonNull Metadata metadata,
-                                     @NonNull PurchaseData purchaseData, @Nullable LoopData loopData,
-                                     @NonNull IncrementerManager incManager, @Nullable LoopTaskManager taskMngr) {
-        return new Incrementer(id, metadata, purchaseData, loopData, incManager, taskMngr);
+    public static Incrementer create(@NonNull String id, @NonNull Metadata metadata, @NonNull PurchaseData purchaseData,
+                                     @Nullable LoopData loopData, @NonNull IncrementerManager incManager,
+                                     @Nullable LoopTaskManager taskMngr, boolean isUpgrade) {
+        return new Incrementer(id, metadata, purchaseData, loopData, incManager, taskMngr, isUpgrade);
     }
 
-    private Incrementer(@NonNull String id, @NonNull Metadata meta,
-                        @NonNull PurchaseData purchase, @Nullable LoopData loop,
-                        @NonNull IncrementerManager incManager, @Nullable LoopTaskManager taskMngr) {
+    private Incrementer(@NonNull String id, @NonNull Metadata meta, @NonNull PurchaseData purchase,
+                        @Nullable LoopData loop, @NonNull IncrementerManager incManager,
+                        @Nullable LoopTaskManager taskMngr, boolean isUpgrade) {
         Logger.d(this, "init: " + id);
         this.id = id;
         this.taskManager = taskMngr;
         this.incrementerManager = incManager;
+        this.isUpgrade = isUpgrade;
         currentMultiplier = calculateCurrentMultiplier();
         metadata = meta;
         purchaseData = purchase;

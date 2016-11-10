@@ -41,7 +41,7 @@ public final class Environment {
             @Override
             public Incrementer map(IncrementerScript arg) {
                 Logger.d(Environment.this, "creating incrementer with id " + arg.getId());
-                return Incrementer.create(arg, incrementerManager, taskManager);
+                return Incrementer.create(arg, incrementerManager, taskManager, true);
             }
         });
         incrementerManager.addAll(incrementers);
@@ -49,7 +49,7 @@ public final class Environment {
         List<Incrementer> upgrades = MapperUtils.optionalMapOptionalList(contentLoader.getUpgrades(), new Mapper<IncrementerScript, Incrementer>() {
             @Override
             public Incrementer map(IncrementerScript arg) {
-                return Incrementer.create(arg, incrementerManager, taskManager);
+                return Incrementer.create(arg, incrementerManager, taskManager, false);
             }
         });
         incrementerManager.addAll(upgrades);
