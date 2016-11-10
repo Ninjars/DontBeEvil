@@ -8,6 +8,7 @@ import com.google.gson.annotations.SerializedName;
 public class ToggleScript {
     @SerializedName("target_id")
     String targetId;
+    @SerializedName("effect_id")
     String effectId;
     boolean enable;
 
