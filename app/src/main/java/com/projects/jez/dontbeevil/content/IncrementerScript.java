@@ -9,7 +9,7 @@ import com.google.gson.annotations.SerializedName;
  */
 public class IncrementerScript {
     String id;
-    IncrementerMetadataScript metadata;
+    MetadataScript metadata;
     @SerializedName("loop_data") @Nullable
     LoopDataScript loopData;
     @SerializedName("purchase_data")
@@ -19,7 +19,7 @@ public class IncrementerScript {
         return id;
     }
 
-    public IncrementerMetadataScript getMetadata() {
+    public MetadataScript getMetadata() {
         return metadata;
     }
 

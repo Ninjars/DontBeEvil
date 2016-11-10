@@ -17,6 +17,9 @@ public class PurchaseDataScript {
     @SerializedName("level_multiplier")
     private double levelFactor = 1.0;
     private List<EffectScript> effects;
+    private List<ToggleScript> toggles;
+    @SerializedName("is_unique")
+    private boolean isUnique;
 
     @Nullable
     public EffectScript getBaseCost() {
@@ -27,8 +30,17 @@ public class PurchaseDataScript {
         return levelFactor;
     }
 
+    public boolean isUnique() {
+        return isUnique;
+    }
+
     @NonNull
     public List<EffectScript> getEffects() {
         return effects == null ? new ArrayList<EffectScript>() : effects;
+    }
+
+    @Nullable
+    public List<ToggleScript> getToggles() {
+        return toggles;
     }
 }

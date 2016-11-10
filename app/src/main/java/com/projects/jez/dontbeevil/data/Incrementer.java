@@ -3,6 +3,7 @@ package com.projects.jez.dontbeevil.data;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.projects.jez.dontbeevil.DebugConfig;
 import com.projects.jez.dontbeevil.content.IncrementerScript;
 import com.projects.jez.dontbeevil.engine.ILoopingTask;
 import com.projects.jez.dontbeevil.engine.LoopTaskManager;
@@ -15,22 +16,24 @@ import com.projects.jez.utils.Reducer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 
 /**
  * Created by Jez on 18/03/2016.
  */
 public class Incrementer implements IIncrementerUpdater {
-    private static final boolean DEBUG_ALLOW_INVALID_PURCHASE_ACTIONS = false;
+    private static final boolean DEBUG_ALLOW_INVALID_PURCHASE_ACTIONS = DebugConfig.DEBUG_ALLOW_INVALID_PURCHASE_ACTIONS;
 
     private final @NonNull String id;
-    private final @NonNull IncrementerMetadata metadata;
+    private final @NonNull Metadata metadata;
     private final @Nullable LoopTaskManager taskManager;
     private final @NonNull PurchaseData purchaseData;
     private final @Nullable LoopData loopData;
     private final @NonNull IncrementerManager incrementerManager;
     private final HashMap<String, Double> multipliers = new HashMap<>();
-    private final List<IIncrementerListener> listeners = new ArrayList<>();
+    private final HashSet<String> disabledEffects = new HashSet<>();
+    private final boolean isUpgrade;
+    private @Nullable IIncrementerListener listener;
     private final Runnable loopTaskRunnable;
     private double currentMultiplier;
     private double value = 0.0;
@@ -73,28 +76,29 @@ public class Incrementer implements IIncrementerUpdater {
     }
 
     public static Incrementer create(@NonNull IncrementerScript arg, @NonNull IncrementerManager incManager,
-                                     @Nullable LoopTaskManager taskMngr) {
-        IncrementerMetadata meta = IncrementerMetadata.create(arg.getMetadata());
+                                     @Nullable LoopTaskManager taskMngr, boolean isUpgrade) {
+        Metadata meta = Metadata.create(arg.getMetadata());
         PurchaseData purchase = PurchaseData.create(arg.getPurchaseData());
         LoopData loop = LoopData.create(arg.getLoopData());
         String id = arg.getId();
 
-        return create(id, meta, purchase, loop, incManager, taskMngr);
+        return create(id, meta, purchase, loop, incManager, taskMngr, isUpgrade);
     }
 
-    public static Incrementer create(@NonNull String id, @NonNull IncrementerMetadata metadata,
-                                     @NonNull PurchaseData purchaseData, @Nullable LoopData loopData,
-                                     @NonNull IncrementerManager incManager, @Nullable LoopTaskManager taskMngr) {
-        return new Incrementer(id, metadata, purchaseData, loopData, incManager, taskMngr);
+    public static Incrementer create(@NonNull String id, @NonNull Metadata metadata, @NonNull PurchaseData purchaseData,
+                                     @Nullable LoopData loopData, @NonNull IncrementerManager incManager,
+                                     @Nullable LoopTaskManager taskMngr, boolean isUpgrade) {
+        return new Incrementer(id, metadata, purchaseData, loopData, incManager, taskMngr, isUpgrade);
     }
 
-    private Incrementer(@NonNull String id, @NonNull IncrementerMetadata meta,
-                        @NonNull PurchaseData purchase, @Nullable LoopData loop,
-                        @NonNull IncrementerManager incManager, @Nullable LoopTaskManager taskMngr) {
+    private Incrementer(@NonNull String id, @NonNull Metadata meta, @NonNull PurchaseData purchase,
+                        @Nullable LoopData loop, @NonNull IncrementerManager incManager,
+                        @Nullable LoopTaskManager taskMngr, boolean isUpgrade) {
         Logger.d(this, "init: " + id);
         this.id = id;
         this.taskManager = taskMngr;
         this.incrementerManager = incManager;
+        this.isUpgrade = isUpgrade;
         currentMultiplier = calculateCurrentMultiplier();
         metadata = meta;
         purchaseData = purchase;
@@ -102,11 +106,22 @@ public class Incrementer implements IIncrementerUpdater {
 
         if (loopData != null) {
             Logger.d(this, id + " has loop data");
+
+            // populate set of disabled effects
+            for (Effect effect : loopData.getEffects()) {
+                if (effect.isDisabled()) {
+                    disabledEffects.add(effect.getTargetId());
+                }
+            }
+
             loopTaskRunnable = new Runnable() {
                 @Override
                 public void run() {
                     double count = value;
                     for (Effect effect : loopData.getEffects()) {
+                        if (disabledEffects.contains(effect.getTargetId())) {
+                            continue;
+                        }
                         String targetId = effect.getTargetId();
                         Incrementer inc = incrementerManager.getIncrementer(targetId);
                         if (inc == null) {
@@ -148,9 +163,7 @@ public class Incrementer implements IIncrementerUpdater {
         if (loopData != null && loopTask == null && value > 0 && taskManager != null) {
             loopTask = taskManager.startLoopingTask(id, loopData.getChargeTime(), loopTaskRunnable);
         }
-        for (IIncrementerListener listener : listeners) {
-            listener.onUpdate(this);
-        }
+        updateListener();
         return true;
     }
 
@@ -174,12 +187,26 @@ public class Incrementer implements IIncrementerUpdater {
         }
     }
 
+    /**
+     * Multipliers are tracked by source id, so the source of each change is accountable.
+     * Multiplier values are used as a factor, so '0.5' would be a 50% increase, '-1' would be a
+     * 100% decrease.  All multiplier values are summed to get the final factor to apply to the
+     * incrementer's effects when it loops.
+     *
+     * @param applierId Id of source of new value
+     * @param change value to add to the multiplication factor
+     */
     private void applyMultiplier(String applierId, double change) {
-        multipliers.put(applierId, change);
-        currentMultiplier = calculateCurrentMultiplier();
-        for (IIncrementerListener listener : listeners) {
-            listener.onUpdate(this);
+        if (multipliers.containsKey(applierId)) {
+            Logger.i(this, "updating multiplier " + applierId);
+            multipliers.put(applierId, multipliers.get(applierId) + change);
+        } else {
+            Logger.i(this, "applying multiplier " + applierId);
+            multipliers.put(applierId, change);
         }
+        currentMultiplier = calculateCurrentMultiplier();
+
+        updateListener();
     }
 
     private double calculateCurrentMultiplier() {
@@ -209,9 +236,15 @@ public class Incrementer implements IIncrementerUpdater {
         return id;
     }
 
-    public void addListener(IIncrementerListener listener) {
-        listeners.add(listener);
-        listener.onUpdate(this);
+    public void attachListener(@Nullable IIncrementerListener listener) {
+        this.listener = listener;
+        updateListener();
+    }
+
+    private void updateListener() {
+        if (listener != null) {
+            listener.onUpdate(this);
+        }
     }
 
     public String getTitle() {
@@ -223,7 +256,7 @@ public class Incrementer implements IIncrementerUpdater {
     }
 
     public Integer getSortOrder() {
-        return metadata.getSortOrder();
+        return isUpgrade ? -metadata.getSortOrder() : metadata.getSortOrder();
     }
 
     /**
@@ -256,8 +289,9 @@ public class Incrementer implements IIncrementerUpdater {
         Logger.d(this, id + " preformPurchaseActions()");
 
         Long cost = getCurrentCost();
-        if (null != cost) {
-            String targetId = purchaseData.getBaseCost().getTargetId();
+        Effect baseCost = purchaseData.getBaseCost();
+        if (null != cost && null != baseCost) {
+            String targetId = baseCost.getTargetId();
             Incrementer inc = incrementerManager.getIncrementer(targetId);
             if (inc == null) {
                 throw new UnknownIncrementerRuntimeError(targetId);
@@ -284,6 +318,30 @@ public class Incrementer implements IIncrementerUpdater {
             Logger.d(this, "> applying effect " + effect.getTargetId() + " " + change);
             inc.applyChange(id, effect.getFunction(), change);
         }
+
+        for (Toggle toggle : purchaseData.getToggles()) {
+            String targetId = toggle.getTargetId();
+            Incrementer inc = incrementerManager.getIncrementer(targetId);
+            if (inc == null) {
+                throw new UnknownIncrementerRuntimeError(targetId);
+            }
+            String effectId = toggle.getEffectId();
+            boolean enable = toggle.isEnable();
+            inc.toggle(effectId, enable);
+        }
+
+        if (purchaseData.isUnique()) {
+            Logger.d(this, "removing unique incrementer " + id);
+            incrementerManager.removeIncrementer(this);
+        }
         return true;
+    }
+
+    private void toggle(String effectId, boolean enable) {
+        if (enable) {
+            disabledEffects.remove(effectId);
+        } else {
+            disabledEffects.add(effectId);
+        }
     }
 }

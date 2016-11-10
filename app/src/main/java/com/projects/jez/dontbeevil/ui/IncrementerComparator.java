@@ -7,6 +7,6 @@ import java.util.Comparator;
 public class IncrementerComparator implements Comparator<Incrementer> {
     @Override
     public int compare(Incrementer lhs, Incrementer rhs) {
-        return rhs.getSortOrder().compareTo(lhs.getSortOrder());
+        return lhs.getSortOrder().compareTo(rhs.getSortOrder());
     }
 }

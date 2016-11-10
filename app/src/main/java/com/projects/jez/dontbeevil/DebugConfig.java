@@ -10,6 +10,7 @@ import com.projects.jez.utils.Logger;
  */
 
 public class DebugConfig {
+    public static final boolean DEBUG_ALLOW_INVALID_PURCHASE_ACTIONS = true;
     public static final boolean ENABLE_DEBUG_LOGGING = true;
 
     // Add or remove classes from this in order to have them log.

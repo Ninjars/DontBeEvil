@@ -5,26 +5,21 @@ import com.google.gson.annotations.SerializedName;
 /**
  * Created by Jez on 25/03/2016.
  */
-public class EffectScript {
+public class ToggleScript {
     @SerializedName("target_id")
     String targetId;
-    double value;
-    String type;
-    boolean disabled;
+    String effectId;
+    boolean enable;
 
     public String getTargetId() {
         return targetId;
     }
 
-    public double getValue() {
-        return value;
+    public String getEffectId() {
+        return effectId;
     }
 
-    public String getFunction() {
-        return type;
-    }
-
-    public boolean isDisabled() {
-        return disabled;
+    public boolean enable() {
+        return enable;
     }
 }
