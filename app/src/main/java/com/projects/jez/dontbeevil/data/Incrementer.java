@@ -32,6 +32,7 @@ public class Incrementer implements IIncrementerUpdater {
     private final @NonNull IncrementerManager incrementerManager;
     private final HashMap<String, Double> multipliers = new HashMap<>();
     private final HashSet<String> disabledEffects = new HashSet<>();
+    private final HashMap<String, Incrementer> effectMultipliers = new HashMap<>();
     private final boolean isUpgrade;
     private @Nullable IIncrementerListener listener;
     private final Runnable loopTaskRunnable;
@@ -127,7 +128,13 @@ public class Incrementer implements IIncrementerUpdater {
                         if (inc == null) {
                             throw new UnknownIncrementerRuntimeError(targetId);
                         }
-                        double change = effect.getValue() * count * currentMultiplier;
+                        Incrementer affector = effectMultipliers.get(effect.getTargetId());
+                        double affectorMultiplier = 1f;
+                        if (affector != null) {
+                            Logger.d(this, "affector multiplier: " + affector.getValue());
+                            affectorMultiplier = affector.getValue();
+                        }
+                        double change = effect.getValue() * count * currentMultiplier * affectorMultiplier;
                         inc.applyChange(Incrementer.this.id, effect.getFunction(), change);
                     }
                 }
@@ -327,7 +334,7 @@ public class Incrementer implements IIncrementerUpdater {
             }
             String effectId = toggle.getEffectId();
             boolean enable = toggle.isEnable();
-            inc.toggle(effectId, enable);
+            inc.toggle(effectId, this, enable);
         }
 
         if (purchaseData.isUnique()) {
@@ -337,11 +344,17 @@ public class Incrementer implements IIncrementerUpdater {
         return true;
     }
 
-    private void toggle(String effectId, boolean enable) {
+    private void toggle(String effectId, Incrementer incrementer, boolean enable) {
+        boolean noChange = enable && !disabledEffects.contains(effectId);
+        if (noChange) {
+            return;
+        }
         if (enable) {
             disabledEffects.remove(effectId);
+            effectMultipliers.put(effectId, incrementer);
         } else {
             disabledEffects.add(effectId);
+            effectMultipliers.remove(effectId);
         }
     }
 }

@@ -17,6 +17,23 @@
 		}
 	},
 	{
+		"id": "ad_money",
+		"metadata": {
+			"title": "Money",
+			"caption": "Gotta pay the bills!",
+			"sort_order": 0
+		},
+		"purchase_data": {
+			"level_multiplier": 1.0,
+			"effects": [
+				{
+					"target_id": "ad_money",
+					"value": 0
+				}
+			]
+		}
+	},
+	{
 		"id": "shares",
 		"metadata": {
 			"title": "Shares",
@@ -68,6 +85,39 @@
 					"target_id": "shares",
 					"value": 1,
 					"disabled": true
+				},
+				{
+					"target_id": "ad_money",
+					"value": 1,
+					"disabled": true
+				}
+			]
+		}
+	},
+	{
+		"id": "adverts",
+		"metadata": {
+			"title": "Adverts",
+			"caption": "Make some money off your players!",
+			"sort_order": 30
+		},
+		"purchase_data": {
+			"level_multiplier": 1.2,
+			"base_cost": {
+				"target_id": "plays",
+				"value": -5
+			},
+			"effects": [
+				{
+					"target_id": "adverts",
+					"value": 1
+				}
+			],
+			"toggles": [
+				{
+					"target_id": "players",
+					"effect_id": "ad_money",
+					"enable": true
 				}
 			]
 		}
